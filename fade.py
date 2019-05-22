@@ -25,8 +25,8 @@ class PyApp(gtk.Window):
 
         try:
             self.surface = cairo.ImageSurface.create_from_png("/usr/share/icons/gnome/256x256/emotes/face-angel.png")
-        except Exception, e:
-            print e.message
+        except Exception as e:
+            print(e.message)
             sys.exit(1)
 
         self.show_all()
