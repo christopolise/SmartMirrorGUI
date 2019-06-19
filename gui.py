@@ -1,10 +1,13 @@
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, Pango, GdkPixbuf
+from gi import require_version
+require_version('Gtk', '3.0')
+from gi.repository import Gtk, Gdk, Pango, GdkPixbuf, GObject
+from datetime import datetime
 
+ENABLE_TIMER = True
 
 black = Gdk.Color(255, 255, 255)
 
+icon = "./src/icon.png"
 helpimg = "./src/apps/help.svg"
 homeimg = "./src/apps/home.svg"
 infoimg = "./src/apps/info.svg"
@@ -13,6 +16,7 @@ quoteimg = "./src/apps/quote.svg"
 timeimg = "./src/apps/time.svg"
 calendarimg = "./src/apps/calendar.svg"
 
+iconpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(icon, -1, 250, True)
 helppix = GdkPixbuf.Pixbuf.new_from_file_at_scale(helpimg, -1, 250, True)
 homepix = GdkPixbuf.Pixbuf.new_from_file_at_scale(homeimg, -1, 128, True)
 infopix = GdkPixbuf.Pixbuf.new_from_file_at_scale(infoimg, -1, 250, True)
@@ -50,6 +54,7 @@ class MainWindow(Gtk.Window):
         self.fullscreen()
         self.modify_bg(Gtk.StateType.NORMAL, black)
         self.set_default_size(500, 500)
+        self.set_icon(iconpix)
 
         self.grid = Gtk.Grid()
         self.picbox = Gtk.Box()
@@ -71,14 +76,16 @@ class MainWindow(Gtk.Window):
         self.grid.add(self.picbox)
         self.grid.attach_next_to(self.textbox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
         # self.add(self.grid)
-        self.HOME.set_reveal_child(False)
-        self.HOME.set_transition_type(Gtk.RevealerTransitionType.CROSSFADE)
+
         self.HOME.add(self.grid)
         self.add(self.HOME)
-        self.HOME.set_reveal_child(not self.HOME.get_reveal_child())
+        self.HOME.set_reveal_child(True)
+        # self.HOME.set_transition_type(Gtk.RevealerTransitionType.CROSSFADE)
+        # self.HOME.set_reveal_child(not self.HOME.get_reveal_child())
         self.go_home()
 
     def do_key_press_event(self, event):
+        global ENABLE_TIMER
         Gtk.Window.do_key_press_event(self, event)
         if event.keyval == Gdk.KEY_Escape:
             self.unfullscreen()
@@ -91,6 +98,9 @@ class MainWindow(Gtk.Window):
         elif event.keyval == Gdk.KEY_w and self.state is not self.state_list[1]:
             self.get_weather()
         elif event.keyval == Gdk.KEY_t and self.state is not self.state_list[2]:
+            # global ENABLE_TIMER
+            ENABLE_TIMER = True
+            print(ENABLE_TIMER)
             self.get_time_date()
         elif event.keyval == Gdk.KEY_m and self.state is not self.state_list[3]:
             self.show_messages()
@@ -105,11 +115,13 @@ class MainWindow(Gtk.Window):
         elif event.keyval == Gdk.KEY_n and self.state is not self.state_list[8]:
             self.show_mirror()
         elif event.keyval == Gdk.KEY_Left:
+            ENABLE_TIMER = False
             if self.state_list.index(self.state) != 1:
                 self.state = self.state_list[self.state_list.index(str(self.state)) - 1]
                 if self.state is "WEATHER":
                     self.get_weather()
                 elif self.state is "TIME":
+                    ENABLE_TIMER = True
                     self.get_time_date()
                 elif self.state is "MESSAGES":
                     self.show_messages()
@@ -127,11 +139,21 @@ class MainWindow(Gtk.Window):
                 self.state = self.state_list[len(self.state_list) - 1]
                 self.show_mirror()
         elif event.keyval == Gdk.KEY_Right:
+            # if self.state == "TIME":
+            #     print("REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
+            #     ENABLE_TIMER = False
+            #     self.get_weather()
+            # global ENABLE_TIMER
+            ENABLE_TIMER = False
+            print(ENABLE_TIMER)
+            # self.HOME.set_transition_type(Gtk.RevealerTransitionType.SLIDE_LEFT)
+            # self.HOME.set_reveal_child(not self.HOME.get_reveal_child())
             if self.state_list.index(self.state) != len(self.state_list) - 1:
                 self.state = self.state_list[self.state_list.index(str(self.state)) + 1]
                 if self.state == "WEATHER":
                     self.get_weather()
                 elif self.state is "TIME":
+                    ENABLE_TIMER = True
                     self.get_time_date()
                 elif self.state is "MESSAGES":
                     self.show_messages()
@@ -152,9 +174,10 @@ class MainWindow(Gtk.Window):
         #     self.get_root_window().set_cursor(Gdk.Cursor(Gdk.CursorType.ARROW)) and exit(0)
         #     self.quit()
         #     exit(0)
-        return False
 
     def go_home(self):
+        global ENABLE_TIMER
+        ENABLE_TIMER = True
         self.state = self.state_list[0]
         # self.HOME.set_reveal_child(True)
         # self.HOME.set_transition_type(Gtk.RevealerTransitionType.CROSSFADE)
@@ -165,6 +188,8 @@ class MainWindow(Gtk.Window):
         print("HOME PANEL")
 
     def get_weather(self):
+        global ENABLE_TIMER
+        ENABLE_TIMER = False
         self.state = self.state_list[1]
         self.destroy_children()
         self.label.set_text("WEATHER")
@@ -174,15 +199,25 @@ class MainWindow(Gtk.Window):
         print("GET WEATHER")
 
     def get_time_date(self):
+        global ENABLE_TIMER
+        print("ENTERING TIMER")
+        # ENABLE_TIMER = True
+        # if ENABLE_TIMER:
         self.state = self.state_list[2]
         self.destroy_children()
-        self.label.set_text("TIME AND DATE")
+        fontdesc = Pango.FontDescription("AnjaliOldLipi Bold 150")
+        self.label.override_font(fontdesc)
+        time = str(datetime.now().strftime("%-I:%M:%S %p "))
+        self.label.set_label(time)
         self.image.set_from_pixbuf(timepix)
         self.grid.add(self.picbox)
         self.grid.attach_next_to(self.textbox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
+        self.startclocktimer()
         print("TIME AND DATE")
 
     def show_messages(self):
+        global ENABLE_TIMER
+        ENABLE_TIMER = False
         self.state = self.state_list[3]
         self.destroy_children()
         self.label.set_text("MESSAGES")
@@ -192,6 +227,8 @@ class MainWindow(Gtk.Window):
         print("GET MESSAGES")
 
     def show_quote(self):
+        global ENABLE_TIMER
+        ENABLE_TIMER = False
         self.state = self.state_list[4]
         self.destroy_children()
         self.label.set_text("QUOTE")
@@ -201,6 +238,8 @@ class MainWindow(Gtk.Window):
         print("GET QUOTE")
 
     def show_help(self):
+        global ENABLE_TIMER
+        ENABLE_TIMER = False
         self.state = self.state_list[6]
         self.destroy_children()
         self.label.set_text("HELP")
@@ -210,6 +249,8 @@ class MainWindow(Gtk.Window):
         print("HELP")
 
     def show_info(self):
+        global ENABLE_TIMER
+        ENABLE_TIMER = False
         self.state = self.state_list[7]
         self.destroy_children()
         self.label.set_text("INFO")
@@ -219,10 +260,14 @@ class MainWindow(Gtk.Window):
         print("INFO")
 
     def show_mirror(self):
+        global ENABLE_TIMER
+        ENABLE_TIMER = False
         self.state = self.state_list[8]
         self.destroy_children()
 
     def show_calendar(self):
+        global ENABLE_TIMER
+        ENABLE_TIMER = False
         self.state = self.state_list[5]
         self.destroy_children()
         self.label.set_text("CALENDAR")
@@ -234,10 +279,18 @@ class MainWindow(Gtk.Window):
         for item in self.grid:
             self.grid.remove(item)
 
-    # def quit(self):
-    #     # self.get_root_window().set_cursor(Gdk.Cursor(Gdk.CursorType.WATCH))
-    #     Gtk.main_quit
-    #     # exit(0)
+    def startclocktimer(self):
+        global ENABLE_TIMER
+        print(ENABLE_TIMER)
+        if ENABLE_TIMER:
+            print("banana")
+            GObject.timeout_add(1000, self.get_time_date)
+        else:
+            print("STOPOS")
+            return(print("OHMYGAHSHIRETURNEDSOMETHING"))
+
+    # def keeptimer(self):
+
 
 
 window = MainWindow()
