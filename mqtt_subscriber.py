@@ -38,6 +38,22 @@ class UpdateInfo:
         self.weather_sunrise = str
         self.weather_sunset = str
 
+        # Event Values:
+        self.event_title_1 = ""
+        self.event_title_2 = ""
+        self.event_title_3 = ""
+        self.event_title_4 = ""
+        self.event_date_1 = ""
+        self.event_date_2 = ""
+        self.event_date_3 = ""
+        self.event_date_4 = ""
+        self.event_location_1 = ""
+        self.event_location_2 = ""
+        self.event_location_3 = ""
+        self.event_location_4 = ""
+
+        self.message_queue = []
+
     def run(self):
         while not self.Connected:  # Wait for connection
             sleep(0.1)
@@ -93,8 +109,52 @@ class UpdateInfo:
                 print("Unrecognized weather val: ", topic[2])
         elif topic[1] == "event":
             print("Incoming from Calendar")
+            if topic[3] == 0:
+                if topic[2] == "title":
+                    self.event_title_1 = str(msg.payload.decode("utf-8"))
+                elif topic[2] == "date":
+                    self.event_date_1 = str(msg.payload.decode("utf-8"))
+                elif topic[2] == "location":
+                    self.event_location_1 = str(msg.payload.decode("utf-8"))
+                else:
+                    print("Unsupported parameter: ", topic[2])
+            elif topic[3] == 1:
+                if topic[2] == "title":
+                    self.event_title_2 = str(msg.payload.decode("utf-8"))
+                elif topic[2] == "date":
+                    self.event_date_2 = str(msg.payload.decode("utf-8"))
+                elif topic[2] == "location":
+                    self.event_location_2 = str(msg.payload.decode("utf-8"))
+                else:
+                    print("Unsupported parameter: ", topic[2])
+            elif topic[3] == 2:
+                if topic[2] == "title":
+                    self.event_title_3 = str(msg.payload.decode("utf-8"))
+                elif topic[2] == "date":
+                    self.event_date_3 = str(msg.payload.decode("utf-8"))
+                elif topic[2] == "location":
+                    self.event_location_3 = str(msg.payload.decode("utf-8"))
+                else:
+                    print("Unsupported parameter: ", topic[2])
+            elif topic[3] == 3:
+                if topic[2] == "title":
+                    self.event_title_4 = str(msg.payload.decode("utf-8"))
+                elif topic[2] == "date":
+                    self.event_date_4 = str(msg.payload.decode("utf-8"))
+                elif topic[2] == "location":
+                    self.event_location_4 = str(msg.payload.decode("utf-8"))
+                else:
+                    print("Unsupported parameter: ", topic[2])
+            else:
+                print("Unsupported number of calendar events")
+
         elif topic[1] == "messages":
             print("Incoming from Messenger")
+            if len(self.message_queue) < 11:
+                self.message_queue.insert(0, str(msg.payload.decode("utf-8")))
+            elif len(self.message_queue) == 10:
+                self.message_queue.pop()
+                self.message_queue.insert(0, str(msg.payload.decode("utf-8")))
         else:
             print("Unrecognized channel: ", topic[1])
         print("Temp: ", self.weather_temp)
