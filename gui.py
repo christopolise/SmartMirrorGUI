@@ -280,17 +280,12 @@ class MainWindow(Gtk.Window):
         else:
             print("Previous state: ", self.state)
             if CUR_KEY == Gdk.KEY_h and self.state is not self.state_list[0]:
-            # self.get_root_window().set_cursor(Gdk.Cursor(Gdk.CursorType.ARROW))
                 self.go_home()
             elif CUR_KEY == Gdk.KEY_w and self.state is not self.state_list[1]:
                 self.get_weather()
-
             elif CUR_KEY == Gdk.KEY_t and self.state is not self.state_list[2]:
-                # global ENABLE_TIMER
                 ENABLE_TIMER = True
-                print(ENABLE_TIMER)
                 self.get_time_date()
-
             elif CUR_KEY == Gdk.KEY_m and self.state is not self.state_list[3]:
                 self.show_messages()
             elif CUR_KEY == Gdk.KEY_q and self.state is not self.state_list[4]:
@@ -307,8 +302,7 @@ class MainWindow(Gtk.Window):
                 ENABLE_TIMER = False
                 self.get_weather()
             elif CUR_KEY == Gdk.KEY_Right:
-                # ENABLE_TIMER = False
-                print("")
+                ENABLE_TIMER = False
                 self.show_messages()
 
 
