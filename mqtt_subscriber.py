@@ -10,6 +10,29 @@ def datetime_from_utc_to_local(utc_datetime):
     return utc_datetime + offset
 
 
+def time_field_get(time_event):
+    certain_time = time_event.split(':')
+    hour = ""
+    minute_day = ""
+    minute = ""
+    time_of_day = ""
+    for item in range(len(certain_time)):
+        if item == 0:
+            hour = certain_time[item]
+        elif item == 1:
+            minute_day = certain_time[item]
+    minute_day = minute_day.split()
+    for item in range(len(minute_day)):
+        if item == 0:
+            minute = minute_day[item]
+        elif item == 1:
+            time_of_day = minute_day[item]
+    if time_of_day == "PM":
+        hour = int(hour) + 12
+
+    return hour, minute
+
+
 class UpdateInfo:
     broker_address = "postman.cloudmqtt.com"
     password = "yMk7upKt2dcGEao3u2uxvXC4KnQRL224"
@@ -30,13 +53,14 @@ class UpdateInfo:
         self.client = client
 
         # Weather Values:
-        self.weather_temp = float
-        self.weather_cond = str
-        self.weather_cloudiness = str
-        self.weather_wind = str
-        self.weather_humidity = str
-        self.weather_sunrise = str
-        self.weather_sunset = str
+        self.weather_temp = ""
+        self.weather_cond = ""
+        self.weather_cloudiness = ""
+        self.weather_wind = ""
+        self.weather_humidity = ""
+        self.weather_sunrise = ""
+        self.weather_sunset = ""
+        self.weather_time_of_day = ""
 
         # Event Values:
         self.event_title_1 = ""
@@ -86,6 +110,7 @@ class UpdateInfo:
 
     def on_message(self, client, userdata, msg):
         # print(msg.payload)
+        # self.get_day_night()
         topic = str(msg.topic).split('/')
         if topic[1] == "Weather":
             # print("Incoming from Weather")
@@ -107,6 +132,7 @@ class UpdateInfo:
                 self.weather_humidity = str(msg.payload.decode("utf-8"))
             else:
                 print("Unrecognized weather val: ", topic[2])
+            self.get_day_night()
         elif topic[1] == "event":
             print("Incoming from Calendar")
             if topic[3] == 0:
@@ -147,7 +173,6 @@ class UpdateInfo:
                     print("Unsupported parameter: ", topic[2])
             else:
                 print("Unsupported number of calendar events")
-
         elif topic[1] == "messages":
             print("Incoming from Messenger")
             if len(self.message_queue) < 11:
@@ -164,6 +189,22 @@ class UpdateInfo:
         print("Cloudiness: ", self.weather_cloudiness)
         print("Wind Speed: ", self.weather_wind)
         print("Humidity: ", self.weather_humidity)
+        print("Time of Day:", self.weather_time_of_day)
+
+    def get_day_night(self):
+        now = datetime.now()
+        hour, minute = time_field_get(self.weather_sunrise)
+        sunrise = now.replace(hour=int(hour), minute=int(minute), second=0, microsecond=0)
+        hour, minute = time_field_get(self.weather_sunset)
+        sunset = now.replace(hour=int(hour), minute=int(minute), second=0, microsecond=0)
+
+        if sunrise <= now < sunset:
+            self.weather_time_of_day = "day"
+        else:
+            self.weather_time_of_day = "night"
+
+    def parse_weather_data(self):
+        pass
 
 
 if __name__ == '__main__':

@@ -2,11 +2,14 @@ from gi import require_version
 require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, Pango, GdkPixbuf, GObject
 from datetime import datetime
+from mqtt_subscriber import UpdateInfo
+
 
 ENABLE_TIMER = True
 CUR_KEY = None
 black = Gdk.Color(255, 255, 255)
 
+# System Icons
 icon = "./src/icon.png"
 helpimg = "./src/apps/help.svg"
 homeimg = "./src/apps/home.svg"
@@ -16,6 +19,20 @@ quoteimg = "./src/apps/quote.svg"
 timeimg = "./src/apps/time.svg"
 calendarimg = "./src/apps/calendar.svg"
 
+# Weather Icons
+severe_img = "./src/weather/alert-severe.svg"
+broken_clouds_img = "./src/weather/broken-clouds.svg"
+clear_day_img = "./src/weather/clear-day.svg"
+clear_night_img = "./src/weather/clear-night.svg"
+clouds_day_img = "./src/weather/clouds-day.svg"
+clouds_night_img = "./src/weather/clouds-night.svg"
+mist_img = "./src/weather/mist.svg"
+rain_img = "./src/weather/rain.svg"
+showers_img = "./src/weather/showers.svg"
+snow_img = "./src/weather/snow.svg"
+thunderstorm_img = "./src/weather/thunderstorm.svg"
+
+# System Images
 iconpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(icon, -1, 250, True)
 helppix = GdkPixbuf.Pixbuf.new_from_file_at_scale(helpimg, -1, 250, True)
 homepix = GdkPixbuf.Pixbuf.new_from_file_at_scale(homeimg, -1, 128, True)
@@ -24,6 +41,19 @@ messagespix = GdkPixbuf.Pixbuf.new_from_file_at_scale(messagesimg, -1, 250, True
 quotepix = GdkPixbuf.Pixbuf.new_from_file_at_scale(quoteimg, -1, 250, True)
 timepix = GdkPixbuf.Pixbuf.new_from_file_at_scale(timeimg, -1, 250, True)
 calendarpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(calendarimg, -1, 250, True)
+
+# Weather Images
+severepix = GdkPixbuf.Pixbuf.new_from_file_at_scale(severe_img, -1, 250, True)
+brokencloudspix = GdkPixbuf.Pixbuf.new_from_file_at_scale(broken_clouds_img, -1, 250, True)
+cleardaypix = GdkPixbuf.Pixbuf.new_from_file_at_scale(clear_day_img, -1, 250, True)
+clearnightpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(clear_night_img, -1, 250, True)
+cloudsdaypix = GdkPixbuf.Pixbuf.new_from_file_at_scale(clouds_day_img, -1, 250, True)
+cloudsnightpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(clouds_night_img, -1, 250, True)
+mistpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(mist_img, -1, 250, True)
+rainpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(rain_img, -1, 250, True)
+showerspix = GdkPixbuf.Pixbuf.new_from_file_at_scale(showers_img, -1, 250, True)
+snowpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(snow_img, -1, 250, True)
+thunderstormpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(thunderstorm_img, -1, 250, True)
 
 home_helppix = GdkPixbuf.Pixbuf.new_from_file_at_scale(helpimg, -1, 128, True)
 home_infopix = GdkPixbuf.Pixbuf.new_from_file_at_scale(infoimg, -1, 128, True)
@@ -39,6 +69,7 @@ class MainWindow(Gtk.Window):
 
         self.get_root_window().set_cursor(Gdk.Cursor(Gdk.CursorType.BLANK_CURSOR))
         self.state_list = ["HOME", "WEATHER", "TIME", "MESSAGES", "QUOTE", "CALENDAR", "HELP", "INFO", "MIRROR"]
+        self.info = UpdateInfo()
 
         self.HOME = Gtk.Revealer()
         self.WEATHER = Gtk.Revealer()
@@ -183,8 +214,69 @@ class MainWindow(Gtk.Window):
         ENABLE_TIMER = False
         self.state = self.state_list[1]
         self.destroy_children()
-        self.label.set_text("WEATHER")
-        self.image.set_from_pixbuf(homepix)
+
+        if self.info.weather_cond == "Clouds":
+            if 11 <= int(self.info.weather_cloudiness) < 25:
+                self.label.set_text("Few Clouds")
+                if self.info.weather_time_of_day == "day":
+                    self.image.set_from_pixbuf(cloudsdaypix)
+                else:
+                    self.image.set_from_pixbuf(cloudsnightpix)
+            elif 25 <= int(self.info.weather_cloudiness) <= 50:
+                self.label.set_text("Scattered Clouds")
+                self.image.set_from_pixbuf(brokencloudspix)
+            elif 51 <= int(self.info.weather_cloudiness) <= 84:
+                self.label.set_text("Broken Clouds")
+                self.image.set_from_pixbuf(brokencloudspix)
+            elif 85 <= int(self.info.weather_cloudiness) <= 100:
+                self.label.set_text("Overcast Clouds")
+                self.image.set_from_pixbuf(brokencloudspix)
+        elif self.info.weather_cond == "Clear":
+            self.label.set_text("Sky is Clear")
+            if self.info.weather_time_of_day == "day":
+                self.image.set_from_pixbuf(cleardaypix)
+            else:
+                self.image.set_from_pixbuf(clearnightpix)
+        elif self.info.weather_cond == "Mist":
+            self.label.set_text("Mist")
+            self.image.set_from_pixbuf(mistpix)
+        elif self.info.weather_cond == "Smoke":
+            self.label.set_text("Smoke")
+            self.image.set_from_pixbuf(mistpix)
+        elif self.info.weather_cond == "Haze":
+            self.label.set_text("Haze")
+            self.image.set_from_pixbuf(mistpix)
+        elif self.info.weather_cond == "Dust":
+            self.label.set_text("DUST")
+            self.image.set_from_pixbuf(mistpix)
+        elif self.info.weather_cond == "Fog":
+            self.label.set_text("Fog")
+            self.image.set_from_pixbuf(mistpix)
+        elif self.info.weather_cond == "Sand":
+            self.label.set_text("Sand")
+            self.image.set_from_pixbuf(mistpix)
+        elif self.info.weather_cond == "Ash":
+            self.label.set_text("Volcanic Ash")
+            self.image.set_from_pixbuf(mistpix)
+        elif self.info.weather_cond == "Squall":
+            self.label.set_text("Squalls")
+            self.image.set_from_pixbuf(mistpix)
+        elif self.info.weather_cond == "Tornado":
+            self.label.set_text("Tornado")
+            self.image.set_from_pixbuf(mistpix)
+        elif self.info.weather_cond == "Snow":
+            self.label.set_text("SNOW")
+            self.image.set_from_pixbuf(snowpix)
+        elif self.info.weather_cond == "Rain":
+            self.label.set_text("RAIN")
+            self.image.set_from_pixbuf(rainpix)
+        elif self.info.weather_cond == "Drizzle":
+            self.label.set_text("DRIZZLE")
+            self.image.set_from_pixbuf(showerspix)
+        elif self.info.weather_cond == "Thunderstorm":
+            self.label.set_text("THUNDERSTORM")
+            self.image.set_from_pixbuf(thunderstormpix)
+
         self.grid.add(self.picbox)
         self.grid.attach_next_to(self.textbox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
         print(self.state)
