@@ -115,7 +115,7 @@ class UpdateInfo:
         if topic[1] == "Weather":
             # print("Incoming from Weather")
             if topic[2] == "Temp":
-                self.weather_temp = float(msg.payload.decode("utf-8"))
+                self.weather_temp = msg.payload.decode("utf-8")[:-1]
             elif topic[2] == "Condition":
                 self.weather_cond = str(msg.payload.decode("utf-8"))
             elif topic[2] == "Sunrise":

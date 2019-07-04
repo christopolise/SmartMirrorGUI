@@ -89,23 +89,45 @@ class MainWindow(Gtk.Window):
 
         self.grid = Gtk.Grid()
         self.picbox = Gtk.Box()
-        self.textbox = Gtk.Box()
+        self.titlebox = Gtk.Box()
+
+        self.cond_box = Gtk.Box
+        self.sunrise_box = Gtk.Box()
+        self.sunset_box = Gtk.Box()
+        self.cloudiness_box = Gtk.Box()
+        self.wind_box = Gtk.Box()
+        self.humidity_box = Gtk.Box()
 
         self.image = Gtk.Image()
         self.image.set_from_pixbuf(homepix)
 
-        self.label = Gtk.Label()
+        self.title = Gtk.Label()
+
+        self.weather_cond = Gtk.Label()
+        self.weather_sunrise = Gtk.Label()
+        self.weather_sunset = Gtk.Label()
+        self.weather_cloudiness = Gtk.Label()
+        self.weather_wind = Gtk.Label()
+        self.weather_humidity = Gtk.Label()
 
         fontdesc = Pango.FontDescription("AnjaliOldLipi Bold 30")
-        self.label.override_font(fontdesc)
-        self.label.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
-        # self.label.foreground_color(labelcolor)
+        self.title.override_font(fontdesc)
+        self.title.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+        # self.title.foreground_color(labelcolor)
 
         self.picbox.add(self.image)
-        self.textbox.add(self.label)
+        self.titlebox.add(self.title)
+
+        # self.cond_box.add(self.weather_cond)
+        self.sunrise_box.add(self.weather_sunrise)
+        self.sunrise_box.add(self.weather_cond)
+        self.sunset_box.add(self.weather_cond)
+        self.wind_box.add(self.weather_cond)
+        self.humidity_box.add(self.weather_cond)
 
         self.grid.add(self.picbox)
-        self.grid.attach_next_to(self.textbox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
+        self.grid.attach_next_to(self.titlebox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
+        # self.grid.attach_next_to(self.cond_box, self.titlebox, Gtk.PositionType.BOTTOM, 1, 2)
         # self.add(self.grid)
 
         self.HOME.add(self.grid)
@@ -120,7 +142,7 @@ class MainWindow(Gtk.Window):
         global CUR_KEY
         Gtk.Window.do_key_press_event(self, event)
         CUR_KEY = event.keyval
-        print(CUR_KEY)
+        # print(CUR_KEY)
         if event.keyval == Gdk.KEY_Escape:
             self.unfullscreen()
             self.get_root_window().set_cursor(Gdk.Cursor(Gdk.CursorType.ARROW))
@@ -134,7 +156,6 @@ class MainWindow(Gtk.Window):
         elif event.keyval == Gdk.KEY_t and self.state is not self.state_list[2]:
             # global ENABLE_TIMER
             ENABLE_TIMER = True
-            print(ENABLE_TIMER)
             self.get_time_date()
         elif event.keyval == Gdk.KEY_m and self.state is not self.state_list[3]:
             self.show_messages()
@@ -199,13 +220,13 @@ class MainWindow(Gtk.Window):
 
     def go_home(self):
         global ENABLE_TIMER
-        ENABLE_TIMER = True
+        ENABLE_TIMER = False
         self.state = self.state_list[0]
         # self.HOME.set_reveal_child(True)
         # self.HOME.set_transition_type(Gtk.RevealerTransitionType.CROSSFADE)
         # self.HOME.add(self.grid)
         # self.add(self.HOME)
-        self.label.set_text("HOME")
+        self.title.set_text("HOME")
         self.image.set_from_pixbuf(homepix)
         print(self.state)
 
@@ -217,68 +238,86 @@ class MainWindow(Gtk.Window):
 
         if self.info.weather_cond == "Clouds":
             if 11 <= int(self.info.weather_cloudiness) < 25:
-                self.label.set_text("Few Clouds")
+                self.weather_cond.set_text("Few Clouds")
                 if self.info.weather_time_of_day == "day":
                     self.image.set_from_pixbuf(cloudsdaypix)
                 else:
                     self.image.set_from_pixbuf(cloudsnightpix)
             elif 25 <= int(self.info.weather_cloudiness) <= 50:
-                self.label.set_text("Scattered Clouds")
-                self.image.set_from_pixbuf(brokencloudspix)
+                self.weather_cond.set_text("Scattered Clouds")
+                if self.info.weather_time_of_day == "day":
+                    self.image.set_from_pixbuf(cloudsdaypix)
+                else:
+                    self.image.set_from_pixbuf(cloudsnightpix)
             elif 51 <= int(self.info.weather_cloudiness) <= 84:
-                self.label.set_text("Broken Clouds")
+                self.weather_cond.set_text("Broken Clouds")
                 self.image.set_from_pixbuf(brokencloudspix)
             elif 85 <= int(self.info.weather_cloudiness) <= 100:
-                self.label.set_text("Overcast Clouds")
+                self.weather_cond.set_text("Overcast Clouds")
                 self.image.set_from_pixbuf(brokencloudspix)
         elif self.info.weather_cond == "Clear":
-            self.label.set_text("Sky is Clear")
+            self.weather_cond.set_text("Sky is Clear")
             if self.info.weather_time_of_day == "day":
                 self.image.set_from_pixbuf(cleardaypix)
             else:
                 self.image.set_from_pixbuf(clearnightpix)
         elif self.info.weather_cond == "Mist":
-            self.label.set_text("Mist")
+            self.weather_cond.set_text("Mist")
             self.image.set_from_pixbuf(mistpix)
         elif self.info.weather_cond == "Smoke":
-            self.label.set_text("Smoke")
+            self.weather_cond.set_text("Smoke")
             self.image.set_from_pixbuf(mistpix)
         elif self.info.weather_cond == "Haze":
-            self.label.set_text("Haze")
+            self.weather_cond.set_text("Haze")
             self.image.set_from_pixbuf(mistpix)
         elif self.info.weather_cond == "Dust":
-            self.label.set_text("DUST")
+            self.weather_cond.set_text("DUST")
             self.image.set_from_pixbuf(mistpix)
         elif self.info.weather_cond == "Fog":
-            self.label.set_text("Fog")
+            self.weather_cond.set_text("Fog")
             self.image.set_from_pixbuf(mistpix)
         elif self.info.weather_cond == "Sand":
-            self.label.set_text("Sand")
+            self.weather_cond.set_text("Sand")
             self.image.set_from_pixbuf(mistpix)
         elif self.info.weather_cond == "Ash":
-            self.label.set_text("Volcanic Ash")
+            self.weather_cond.set_text("Volcanic Ash")
             self.image.set_from_pixbuf(mistpix)
         elif self.info.weather_cond == "Squall":
-            self.label.set_text("Squalls")
+            self.weather_cond.set_text("Squalls")
             self.image.set_from_pixbuf(mistpix)
         elif self.info.weather_cond == "Tornado":
-            self.label.set_text("Tornado")
+            self.weather_cond.set_text("Tornado")
             self.image.set_from_pixbuf(mistpix)
         elif self.info.weather_cond == "Snow":
-            self.label.set_text("SNOW")
+            self.weather_cond.set_text("SNOW")
             self.image.set_from_pixbuf(snowpix)
         elif self.info.weather_cond == "Rain":
-            self.label.set_text("RAIN")
+            self.weather_cond.set_text("RAIN")
             self.image.set_from_pixbuf(rainpix)
         elif self.info.weather_cond == "Drizzle":
-            self.label.set_text("DRIZZLE")
+            self.weather_cond.set_text("DRIZZLE")
             self.image.set_from_pixbuf(showerspix)
         elif self.info.weather_cond == "Thunderstorm":
-            self.label.set_text("THUNDERSTORM")
+            self.weather_cond.set_text("THUNDERSTORM")
             self.image.set_from_pixbuf(thunderstormpix)
 
+        fontdesc = Pango.FontDescription("AnjaliOldLipi Bold 70")
+        self.weather_cond.override_font(fontdesc)
+        self.weather_cond.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+
+        fontdesc = Pango.FontDescription("AnjaliOldLipi Bold 150")
+        self.title.override_font(fontdesc)
+        self.title.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+
+        self.title.set_text(self.info.weather_temp + "°F")
         self.grid.add(self.picbox)
-        self.grid.attach_next_to(self.textbox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
+        self.grid.attach_next_to(self.titlebox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
+        # self.grid.attach_next_to(self.cond_box, self.titlebox, Gtk.PositionType.BOTTOM, 1, 2)
+        # self.grid.attach_next_to(sunrise_label, temp_label, Gtk.PositionType.BOTTOM, 1, 2)
+        # self.grid.attach_next_to(sunset_label, sunrise_label, Gtk.PositionType.BOTTOM, 1, 2)
+        # self.grid.attach_next_to(cloudiness_label, sunset_label, Gtk.PositionType.BOTTOM, 1, 2)
+        # self.grid.attach_next_to(wind_speed_label, cloudiness_label, Gtk.PositionType.BOTTOM, 1, 2)
+        # self.grid.attach_next_to(humidity_label, wind_speed_label, Gtk.PositionType.BOTTOM, 1, 2)
         print(self.state)
 
     def get_time_date(self):
@@ -289,12 +328,12 @@ class MainWindow(Gtk.Window):
         self.state = self.state_list[2]
         self.destroy_children()
         fontdesc = Pango.FontDescription("AnjaliOldLipi Bold 150")
-        self.label.override_font(fontdesc)
+        self.title.override_font(fontdesc)
         time = str(datetime.now().strftime("%-I:%M:%S %p "))
-        self.label.set_label(time)
+        self.title.set_label(time)
         self.image.set_from_pixbuf(timepix)
         self.grid.add(self.picbox)
-        self.grid.attach_next_to(self.textbox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
+        self.grid.attach_next_to(self.titlebox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
         self.start_clock_timer()
         print(self.state)
 
@@ -303,10 +342,10 @@ class MainWindow(Gtk.Window):
         ENABLE_TIMER = False
         self.state = self.state_list[3]
         self.destroy_children()
-        self.label.set_text("MESSAGES")
+        self.title.set_text("MESSAGES")
         self.image.set_from_pixbuf(messagespix)
         self.grid.add(self.picbox)
-        self.grid.attach_next_to(self.textbox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
+        self.grid.attach_next_to(self.titlebox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
         print(self.state)
 
     def show_quote(self):
@@ -314,10 +353,10 @@ class MainWindow(Gtk.Window):
         ENABLE_TIMER = False
         self.state = self.state_list[4]
         self.destroy_children()
-        self.label.set_text("QUOTE")
+        self.title.set_text("QUOTE")
         self.image.set_from_pixbuf(quotepix)
         self.grid.add(self.picbox)
-        self.grid.attach_next_to(self.textbox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
+        self.grid.attach_next_to(self.titlebox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
         print(self.state)
 
     def show_help(self):
@@ -325,10 +364,10 @@ class MainWindow(Gtk.Window):
         ENABLE_TIMER = False
         self.state = self.state_list[6]
         self.destroy_children()
-        self.label.set_text("HELP")
+        self.title.set_text("HELP")
         self.image.set_from_pixbuf(helppix)
         self.grid.add(self.picbox)
-        self.grid.attach_next_to(self.textbox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
+        self.grid.attach_next_to(self.titlebox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
         print(self.state)
 
     def show_info(self):
@@ -336,10 +375,10 @@ class MainWindow(Gtk.Window):
         ENABLE_TIMER = False
         self.state = self.state_list[7]
         self.destroy_children()
-        self.label.set_text("INFO")
+        self.title.set_text("INFO")
         self.image.set_from_pixbuf(infopix)
         self.grid.add(self.picbox)
-        self.grid.attach_next_to(self.textbox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
+        self.grid.attach_next_to(self.titlebox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
         print(self.state)
 
     def show_mirror(self):
@@ -354,10 +393,10 @@ class MainWindow(Gtk.Window):
         ENABLE_TIMER = False
         self.state = self.state_list[5]
         self.destroy_children()
-        self.label.set_text("CALENDAR")
+        self.title.set_text("CALENDAR")
         self.image.set_from_pixbuf(calendarpix)
         self.grid.add(self.picbox)
-        self.grid.attach_next_to(self.textbox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
+        self.grid.attach_next_to(self.titlebox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
         print(self.state)
 
     def destroy_children(self):
@@ -370,7 +409,7 @@ class MainWindow(Gtk.Window):
         if ENABLE_TIMER:
             GObject.timeout_add(1000, self.get_time_date)
         else:
-            print("Previous state: ", self.state)
+            # print("Previous state: ", self.state)
             if CUR_KEY == Gdk.KEY_h and self.state is not self.state_list[0]:
                 self.go_home()
             elif CUR_KEY == Gdk.KEY_w and self.state is not self.state_list[1]:
