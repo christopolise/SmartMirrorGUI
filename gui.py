@@ -102,14 +102,9 @@ class Weather(Gtk.Layout):
     __gtype_name__ = 'Weather'
 
     def __init__(self, temp, cond, sunrise, sunset, cloudiness, wind, humidity, image):
-        # super().__init__(temp, cond, sunrise, sunset, cloudiness, wind, humidity)
         Gtk.Layout.__init__(self)
         self.set_border_width(20)
-        self.set_size(200, 200)
 
-        # self.add(Gtk.Label(temp))
-        # self.box = Gtk.Box()
-        # self.box
         self.temperature = temp
         self.condition = cond
         self.sunrise = sunrise
@@ -124,6 +119,7 @@ class Weather(Gtk.Layout):
     def create_screen(self):
         center = Gtk.VBox()
         sunbox = Gtk.HBox()
+        cloudbox = Gtk.HBox()
 
         status_image = Gtk.Image()
         status_image.set_from_pixbuf(self.image)
@@ -166,8 +162,8 @@ class Weather(Gtk.Layout):
         condition.set_text(self.condition)
         sunrise.set_text(self.sunrise)
         sunset.set_text(self.sunset)
-        cloudiness.set_text(self.cloudiness)
-        wind.set_text(self.wind)
+        cloudiness.set_text("Cloudiness: " + self.cloudiness + '%')
+        wind.set_text("Wind Speed: " + self.wind + ' mph')
         humidity.set_text("Humidity: " + self.humidity + '%')
 
         sunbox.pack_start(sunrise_image, True, False, 0)
@@ -176,11 +172,14 @@ class Weather(Gtk.Layout):
         sunbox.pack_start(sunset, True, True, 0)
         sunbox.pack_start(humidity, True, True, 0)
 
+        cloudbox.pack_start(cloudiness, True, False, 0)
+        cloudbox.pack_start(wind, True, False, 0)
+
         center.pack_start(status_image, True, False, 0)
         center.pack_start(temperature, True, False, 0)
         center.pack_start(condition, True, False, 0)
+        center.pack_start(cloudbox, True, False, 0)
         center.pack_start(sunbox, True, False, 0)
-        # print(self.width(), "SIZE")
         self.put(center, ((Gdk.Screen.width() / 2) - 325), 100)
 
 
@@ -485,7 +484,7 @@ class MainWindow(Gtk.Window):
             if 11 <= int(self.info.weather_cloudiness) < 25:
                 condition = "Few Clouds"
             elif 25 <= int(self.info.weather_cloudiness) <= 50:
-                condition = "Scattered Clouds"
+                condition = "Sparse Clouds"
             elif 51 <= int(self.info.weather_cloudiness) <= 84:
                 condition = "Broken Clouds"
             elif 85 <= int(self.info.weather_cloudiness) <= 100:
