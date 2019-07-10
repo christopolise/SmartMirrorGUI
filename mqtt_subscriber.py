@@ -78,6 +78,10 @@ class UpdateInfo:
 
         self.message_queue = []
 
+        # Quote values
+        self.quote_text = ""
+        self.quote_author = ""
+
     def run(self):
         while not self.Connected:  # Wait for connection
             sleep(0.1)
@@ -180,6 +184,12 @@ class UpdateInfo:
             elif len(self.message_queue) == 10:
                 self.message_queue.pop()
                 self.message_queue.insert(0, str(msg.payload.decode("utf-8")))
+        elif topic[1] == "quote":
+            print("Incoming from Quotes")
+            if topic[2] == "text":
+                self.quote_text = str(msg.payload.decode("utf-8"))
+            elif topic[2] == "author":
+                self.quote_author = str(msg.payload.decode("utf-8"))
         else:
             print("Unrecognized channel: ", topic[1])
         print("Temp: ", self.weather_temp)

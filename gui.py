@@ -214,8 +214,12 @@ class Messages(Gtk.VBox):
 
 
 class Quote(Gtk.VBox):
-    def __init__(self):
+    def __init__(self, text, author):
         Gtk.VBox.__init__(self)
+
+        self.text = text
+        self.author = author
+
         self.create_screen()
 
     def create_screen(self):
@@ -224,15 +228,26 @@ class Quote(Gtk.VBox):
         logo_image = Gtk.Image()
         logo_image.set_from_pixbuf(quotepix)
 
-        title = Gtk.Label()
-        title.set_text("Quote of the TIME")
+        text = Gtk.Label()
+        author = Gtk.Label()
+        # text.set_label(self.text)
+        text.set_label(self.text)
+        author.set_text("~ " + self.author + " ~")
 
-        tempdesc = Pango.FontDescription("AnjaliOldLipi Bold 70")
-        title.override_font(tempdesc)
-        title.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+        tempdesc = Pango.FontDescription("AnjaliOldLipi Bold 30")
+        text.override_font(tempdesc)
+        text.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+        text.set_line_wrap(True)
+        # text.set_justify(Gtk.Justification.CENTER)
+
+        authordesc = Pango.FontDescription("AnjaliOldLipi Bold Italic 20")
+        author.override_font(authordesc)
+        author.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+        # author.set_line_wrap(True)
 
         center.pack_start(logo_image, True, False, 0)
-        center.pack_start(title, True, False, 0)
+        center.pack_start(text, True, False, 0)
+        center.pack_start(author, True, False, 0)
         self.add(center)
 
 
@@ -248,14 +263,51 @@ class Help(Gtk.VBox):
         logo_image.set_from_pixbuf(helppix)
 
         title = Gtk.Label()
+        description = Gtk.Label()
+        helptext = Gtk.Label()
+
         title.set_text("Help")
+        description.set_text("BYU's Magic Mirror is an IoT project that depends on the following processes located at "
+                             "immerse-iot.byu.edu:\n"
+                             "- Quote API [client_location] which refreshes every 10m or upon request\n"
+                             "- Message API [client_location] which refreshes every time a message is sent or upon "
+                             "request\n"
+                             "- Weather API [client_location] which refreshes every 10m or upon request\n"
+                             "- Calendar API [client_location] which refreshes every day or upon request\n"
+                             "all pushing messages via MQTT publishers and clients to postman.cloudmqtt.com\n")
+        helptext.set_text("[h]\t or <equivalent gesture> returns user to Home Screen\n"
+                          "[t]\t or <equivalent gesture> shows user time and date\n"
+                          "[q]\t or <equivalent gesture> shows a random quote\n"
+                          "[m]\t or <equivalent gesture> shows the message queue\n"
+                          "[w]\t or <equivalent gesture> shows the weather\n"
+                          "[c]\t or <equivalent gesture> shows the calendar events\n"
+                          "[F1]\t or <equivalent gesture> shows this help screen\n"
+                          "[i]\t or <equivalent gesture> shows the About screen\n"
+                          "[m]\t or <equivalent gesture> shows a blank screen for mirror purposes\n"
+                          "[Left]\t or <equivalent gesture> cycles through app screens forwards\n"
+                          "[Right]\t or <equivalent gesture> cycle through app screens backwards\n"
+                          " \n"
+                          "For any other technical/development aspect of this project, please refer to the wiki at "
+                          "[wiki location]\n")
 
         tempdesc = Pango.FontDescription("AnjaliOldLipi Bold 70")
         title.override_font(tempdesc)
         title.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
 
+        descriptdesc = Pango.FontDescription("Ubuntu Mono Italic 20")
+        description.override_font(descriptdesc)
+        description.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+        description.set_line_wrap(True)
+
+        helpdesc = Pango.FontDescription("Ubuntu Mono 20")
+        helptext.override_font(helpdesc)
+        helptext.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+        # help.set_line_wrap(True)
+
         center.pack_start(logo_image, True, False, 0)
         center.pack_start(title, True, False, 0)
+        center.pack_start(description, True, False, 0)
+        center.pack_start(helptext, True, False, 0)
         self.add(center)
 
 
@@ -271,14 +323,44 @@ class Info(Gtk.VBox):
         logo_image.set_from_pixbuf(infopix)
 
         title = Gtk.Label()
+        description = Gtk.Label()
+        creators = Gtk.Label()
+        maintainers = Gtk.Label()
+
         title.set_text("About")
+        description.set_text("BYU's Magic Mirror is a project designed to showcase different IoT principles via \n"
+                             "mirror apps and possible exterior applications all controlled by this unit.")
+        creators.set_text("Written by:\n"
+                          "Philip Lundrigan\t\t Mentoring Professor and project architect\n"
+                          "Christopher Kitras\t\t Display module and graphical user interface design\n"
+                          "Joseph ___\t\t\t Input module\n"
+                          "Levi Fleming\t\t\t Calendar and Messenger APIs and hardware design\n"
+                          "Max ___\t\t\t\t Quote API and hardware design\n"
+                          "Michael Bjerregaard\t\t Weather API and hardware design")
+        maintainers.set_text("Maintained by:\n"
+                             "[2019-Present] Creators")
 
         tempdesc = Pango.FontDescription("AnjaliOldLipi Bold 70")
         title.override_font(tempdesc)
         title.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
 
+        descriptdesc = Pango.FontDescription("AnjaliOldLipi Bold Italic 30")
+        description.override_font(descriptdesc)
+        description.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+
+        creatorsdesc = Pango.FontDescription("AnjaliOldLipi Mono 30")
+        creators.override_font(creatorsdesc)
+        creators.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+
+        maintainersdesc = Pango.FontDescription("AnjaliOldLipi Mono 30")
+        maintainers.override_font(maintainersdesc)
+        maintainers.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+
         center.pack_start(logo_image, True, False, 0)
         center.pack_start(title, True, False, 0)
+        center.pack_start(description, True, False, 0)
+        center.pack_start(creators, True, False, 0)
+        center.pack_start(maintainers, True, False, 0)
         self.add(center)
 
 
@@ -324,11 +406,15 @@ class MainWindow(Gtk.Window):
             print("NULL")
         # print(self.info.weather_temp)
         self.add(loading)
-        while self.info.weather_temp is "" or self.info.weather_cond is "" or self.info.weather_sunrise is "" or\
-                self.info.weather_sunset is "" or self.info.weather_cloudiness is "" or self.info.weather_wind is "" or\
-                self.info.weather_humidity is "":
-            # print("LOADING WEATHER")
-            pass
+        # while self.info.weather_temp is "" or self.info.weather_cond is "" or self.info.weather_sunrise is "" or\
+        #         self.info.weather_sunset is "" or self.info.weather_cloudiness is "" or self.info.weather_wind is "" or\
+        #         self.info.weather_humidity is "":
+        #     # print("LOADING WEATHER")
+        #     pass
+
+        # while self.info.quote_author is "" or self.info.quote_text is "":
+        #     print("LOADING QUOTE")
+        #     pass
 
         # while self.info.event_date_1 is "" or self.info.event_date_2 is "" or self.info.event_date_3 is "" or\
         #         self.info.event_date_4 is "" or self.info.event_location_1 is "" or self.info.event_location_2 is "" or\
@@ -339,8 +425,9 @@ class MainWindow(Gtk.Window):
         # TODO:
         # Quote of the day queue info loading
         self.remove(loading)
-        self.load_weather()
-        quote = Quote()
+        # self.load_weather()
+        # self.load_quote()
+        # quote = Quote()
         help = Help()
         info = Info()
         calendar = Calendar()
@@ -351,7 +438,7 @@ class MainWindow(Gtk.Window):
         # self.add(mirror)
         # self.add(quote)
         # self.add(help)
-        # self.add(info)
+        self.add(info)
         # self.add(calendar)
         # self.add(messages)
 
@@ -378,7 +465,12 @@ class MainWindow(Gtk.Window):
                           self.info.weather_sunset, self.info.weather_cloudiness, self.info.weather_wind,
                           self.info.weather_humidity, image)
         self.add(weather)
-        pass
+
+    def load_quote(self):
+        text = self.info.quote_text
+        author = self.info.quote_author
+        quote = Quote(text, author)
+        self.add(quote)
 
     def do_key_press_event(self, event):
         global ENABLE_TIMER
@@ -476,8 +568,6 @@ class MainWindow(Gtk.Window):
     def get_weather_condition(self):
         global ENABLE_TIMER
         ENABLE_TIMER = False
-        # self.state = self.state_list[1]
-        # self.destroy_children()
         condition = ""
 
         if self.info.weather_cond == "Clouds":
