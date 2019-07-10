@@ -113,7 +113,7 @@ class UpdateInfo:
         # self.get_day_night()
         topic = str(msg.topic).split('/')
         if topic[1] == "Weather":
-            # print("Incoming from Weather")
+            print("Incoming from Weather")
             if topic[2] == "Temp":
                 self.weather_temp = msg.payload.decode("utf-8")[:-1]
             elif topic[2] == "Condition":

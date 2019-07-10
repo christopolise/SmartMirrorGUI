@@ -1,9 +1,10 @@
 from gi import require_version
+
 require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, Pango, GdkPixbuf, GObject
 from datetime import datetime
 from mqtt_subscriber import UpdateInfo
-
+from time import sleep
 
 ENABLE_TIMER = True
 CUR_KEY = None
@@ -18,6 +19,7 @@ messagesimg = "./src/apps/messages.svg"
 quoteimg = "./src/apps/quote.svg"
 timeimg = "./src/apps/time.svg"
 calendarimg = "./src/apps/calendar.svg"
+logoimg = "./src/BYU.svg"
 
 # Weather Icons
 severe_img = "./src/weather/alert-severe.svg"
@@ -41,6 +43,7 @@ messagespix = GdkPixbuf.Pixbuf.new_from_file_at_scale(messagesimg, -1, 250, True
 quotepix = GdkPixbuf.Pixbuf.new_from_file_at_scale(quoteimg, -1, 250, True)
 timepix = GdkPixbuf.Pixbuf.new_from_file_at_scale(timeimg, -1, 250, True)
 calendarpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(calendarimg, -1, 250, True)
+logopix = GdkPixbuf.Pixbuf.new_from_file_at_scale(logoimg, -1, 425, True)
 
 # Weather Images
 severepix = GdkPixbuf.Pixbuf.new_from_file_at_scale(severe_img, -1, 250, True)
@@ -54,6 +57,8 @@ rainpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(rain_img, -1, 250, True)
 showerspix = GdkPixbuf.Pixbuf.new_from_file_at_scale(showers_img, -1, 250, True)
 snowpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(snow_img, -1, 250, True)
 thunderstormpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(thunderstorm_img, -1, 250, True)
+sunrisepix = GdkPixbuf.Pixbuf.new_from_file_at_scale(clear_day_img, -1, 50, True)
+sunsetpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(clear_night_img, -1, 50, True)
 
 home_helppix = GdkPixbuf.Pixbuf.new_from_file_at_scale(helpimg, -1, 128, True)
 home_infopix = GdkPixbuf.Pixbuf.new_from_file_at_scale(infoimg, -1, 128, True)
@@ -61,6 +66,249 @@ home_messagespix = GdkPixbuf.Pixbuf.new_from_file_at_scale(messagesimg, -1, 128,
 home_quotepix = GdkPixbuf.Pixbuf.new_from_file_at_scale(quoteimg, -1, 128, True)
 home_timepix = GdkPixbuf.Pixbuf.new_from_file_at_scale(timeimg, -1, 128, True)
 home_calendarpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(calendarimg, -1, 128, True)
+
+
+class Loading(Gtk.VBox):
+    def __init__(self):
+        Gtk.VBox.__init__(self)
+        self.create_screen()
+
+    def create_screen(self):
+        center = Gtk.VBox()
+
+        logo_image = Gtk.Image()
+        logo_image.set_from_pixbuf(logopix)
+
+        title = Gtk.Label()
+        title.set_text("BYU's Magic Mirror")
+
+        tempdesc = Pango.FontDescription("AnjaliOldLipi Bold 100")
+        title.override_font(tempdesc)
+        title.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+
+        center.pack_start(logo_image, True, False, 0)
+        center.pack_start(title, True, False, 0)
+        self.add(center)
+
+
+class Home(Gtk.Box):
+    def __init__(self):
+        Gtk.Box.__init__(self)
+
+    pass
+
+
+class Weather(Gtk.Layout):
+    __gtype_name__ = 'Weather'
+
+    def __init__(self, temp, cond, sunrise, sunset, cloudiness, wind, humidity, image):
+        # super().__init__(temp, cond, sunrise, sunset, cloudiness, wind, humidity)
+        Gtk.Layout.__init__(self)
+        self.set_border_width(20)
+        self.set_size(200, 200)
+
+        # self.add(Gtk.Label(temp))
+        # self.box = Gtk.Box()
+        # self.box
+        self.temperature = temp
+        self.condition = cond
+        self.sunrise = sunrise
+        self.sunset = sunset
+        self.cloudiness = cloudiness
+        self.wind = wind
+        self.humidity = humidity
+        self.image = image
+
+        self.create_screen()
+
+    def create_screen(self):
+        center = Gtk.VBox()
+        sunbox = Gtk.HBox()
+
+        status_image = Gtk.Image()
+        status_image.set_from_pixbuf(self.image)
+
+        sunrise_image = Gtk.Image()
+        sunset_image = Gtk.Image()
+        sunrise_image.set_from_pixbuf(sunrisepix)
+        sunset_image.set_from_pixbuf(sunsetpix)
+
+        temperature = Gtk.Label()
+        condition = Gtk.Label()
+        sunrise = Gtk.Label()
+        sunset = Gtk.Label()
+        cloudiness = Gtk.Label()
+        wind = Gtk.Label()
+        humidity = Gtk.Label()
+
+        tempdesc = Pango.FontDescription("AnjaliOldLipi Bold 150")
+        temperature.override_font(tempdesc)
+        temperature.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+
+        conditiondesc = Pango.FontDescription("AnjaliOldLipi Bold 70")
+        condition.override_font(conditiondesc)
+        condition.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+
+        labeldesc = Pango.FontDescription("AnjaliOldLipi Bold 23")
+
+        sunrise.override_font(labeldesc)
+        sunrise.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+        sunset.override_font(labeldesc)
+        sunset.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+        cloudiness.override_font(labeldesc)
+        cloudiness.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+        wind.override_font(labeldesc)
+        wind.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+        humidity.override_font(labeldesc)
+        humidity.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+
+        temperature.set_text(self.temperature)
+        condition.set_text(self.condition)
+        sunrise.set_text(self.sunrise)
+        sunset.set_text(self.sunset)
+        cloudiness.set_text(self.cloudiness)
+        wind.set_text(self.wind)
+        humidity.set_text("Humidity: " + self.humidity + '%')
+
+        sunbox.pack_start(sunrise_image, True, False, 0)
+        sunbox.pack_start(sunrise, True, True, 0)
+        sunbox.pack_start(sunset_image, True, True, 0)
+        sunbox.pack_start(sunset, True, True, 0)
+        sunbox.pack_start(humidity, True, True, 0)
+
+        center.pack_start(status_image, True, False, 0)
+        center.pack_start(temperature, True, False, 0)
+        center.pack_start(condition, True, False, 0)
+        center.pack_start(sunbox, True, False, 0)
+        # print(self.width(), "SIZE")
+        self.put(center, ((Gdk.Screen.width() / 2) - 325), 100)
+
+
+class TimeDate(Gtk.Box):
+    def __init__(self):
+        Gtk.Box.__init__(self)
+
+    pass
+
+
+class Messages(Gtk.VBox):
+    def __init__(self):
+        Gtk.VBox.__init__(self)
+        self.create_screen()
+
+    def create_screen(self):
+        center = Gtk.VBox()
+
+        logo_image = Gtk.Image()
+        logo_image.set_from_pixbuf(messagespix)
+
+        title = Gtk.Label()
+        title.set_text("Messages")
+
+        tempdesc = Pango.FontDescription("AnjaliOldLipi Bold 70")
+        title.override_font(tempdesc)
+        title.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+
+        center.pack_start(logo_image, True, False, 0)
+        center.pack_start(title, True, False, 0)
+        self.add(center)
+
+
+class Quote(Gtk.VBox):
+    def __init__(self):
+        Gtk.VBox.__init__(self)
+        self.create_screen()
+
+    def create_screen(self):
+        center = Gtk.VBox()
+
+        logo_image = Gtk.Image()
+        logo_image.set_from_pixbuf(quotepix)
+
+        title = Gtk.Label()
+        title.set_text("Quote of the TIME")
+
+        tempdesc = Pango.FontDescription("AnjaliOldLipi Bold 70")
+        title.override_font(tempdesc)
+        title.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+
+        center.pack_start(logo_image, True, False, 0)
+        center.pack_start(title, True, False, 0)
+        self.add(center)
+
+
+class Help(Gtk.VBox):
+    def __init__(self):
+        Gtk.VBox.__init__(self)
+        self.create_screen()
+
+    def create_screen(self):
+        center = Gtk.VBox()
+
+        logo_image = Gtk.Image()
+        logo_image.set_from_pixbuf(helppix)
+
+        title = Gtk.Label()
+        title.set_text("Help")
+
+        tempdesc = Pango.FontDescription("AnjaliOldLipi Bold 70")
+        title.override_font(tempdesc)
+        title.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+
+        center.pack_start(logo_image, True, False, 0)
+        center.pack_start(title, True, False, 0)
+        self.add(center)
+
+
+class Info(Gtk.VBox):
+    def __init__(self):
+        Gtk.VBox.__init__(self)
+        self.create_screen()
+
+    def create_screen(self):
+        center = Gtk.VBox()
+
+        logo_image = Gtk.Image()
+        logo_image.set_from_pixbuf(infopix)
+
+        title = Gtk.Label()
+        title.set_text("About")
+
+        tempdesc = Pango.FontDescription("AnjaliOldLipi Bold 70")
+        title.override_font(tempdesc)
+        title.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+
+        center.pack_start(logo_image, True, False, 0)
+        center.pack_start(title, True, False, 0)
+        self.add(center)
+
+
+class Calendar(Gtk.VBox):
+    def __init__(self):
+        Gtk.VBox.__init__(self)
+        self.create_screen()
+
+    def create_screen(self):
+        center = Gtk.VBox()
+
+        logo_image = Gtk.Image()
+        logo_image.set_from_pixbuf(calendarpix)
+
+        title = Gtk.Label()
+        title.set_text("Calendar")
+
+        tempdesc = Pango.FontDescription("AnjaliOldLipi Bold 70")
+        title.override_font(tempdesc)
+        title.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+
+        center.pack_start(logo_image, True, False, 0)
+        center.pack_start(title, True, False, 0)
+        self.add(center)
+
+
+class Mirror(Gtk.Box):
+    def __init__(self):
+        Gtk.Box.__init__(self)
 
 
 class MainWindow(Gtk.Window):
@@ -71,71 +319,67 @@ class MainWindow(Gtk.Window):
         self.state_list = ["HOME", "WEATHER", "TIME", "MESSAGES", "QUOTE", "CALENDAR", "HELP", "INFO", "MIRROR"]
         self.info = UpdateInfo()
 
-        self.HOME = Gtk.Revealer()
-        self.WEATHER = Gtk.Revealer()
-        self.TIME = Gtk.Revealer()
-        self.MESSAGES = Gtk.Revealer()
-        self.QUOTE = Gtk.Revealer()
-        self.CALENDAR = Gtk.Revealer()
-        self.HELP = Gtk.Revealer()
-        self.INFO = Gtk.Revealer()
-        self.MIRROR = Gtk.Revealer()
+        loading = Loading()
+        print("window Size: ", Gdk.Screen.width())
+        if self.info.weather_temp is "":
+            print("NULL")
+        # print(self.info.weather_temp)
+        self.add(loading)
+        while self.info.weather_temp is "" or self.info.weather_cond is "" or self.info.weather_sunrise is "" or\
+                self.info.weather_sunset is "" or self.info.weather_cloudiness is "" or self.info.weather_wind is "" or\
+                self.info.weather_humidity is "":
+            # print("LOADING WEATHER")
+            pass
 
-        self.state = self.state_list[0]
+        # while self.info.event_date_1 is "" or self.info.event_date_2 is "" or self.info.event_date_3 is "" or\
+        #         self.info.event_date_4 is "" or self.info.event_location_1 is "" or self.info.event_location_2 is "" or\
+        #         self.info.event_location_3 is "" or self.info.event_location_4 is "" or self.info.event_title_1 is "" or\
+        #         self.info.event_title_2 is "" or self.info.event_title_3 is "" or self.info.event_title_4 is "":
+        #     print("LOADING EVENT CALENDAR")
+
+        # TODO:
+        # Quote of the day queue info loading
+        self.remove(loading)
+        self.load_weather()
+        quote = Quote()
+        help = Help()
+        info = Info()
+        calendar = Calendar()
+        messages = Messages()
+        mirror = Mirror()
+        # self.remove(loading)
+        # self.add(loading)
+        # self.add(mirror)
+        # self.add(quote)
+        # self.add(help)
+        # self.add(info)
+        # self.add(calendar)
+        # self.add(messages)
+
+        # self.HOME = Gtk.Revealer()
+        # self.WEATHER = Gtk.Revealer()
+        # self.TIME = Gtk.Revealer()
+        # self.MESSAGES = Gtk.Revealer()
+        # self.QUOTE = Gtk.Revealer()
+        # self.CALENDAR = Gtk.Revealer()
+        # self.HELP = Gtk.Revealer()
+        # self.INFO = Gtk.Revealer()
+        # self.MIRROR = Gtk.Revealer()
+
+        # self.state = self.state_list[0]
         self.fullscreen()
         self.modify_bg(Gtk.StateType.NORMAL, black)
         self.set_default_size(500, 500)
         self.set_icon(iconpix)
 
-        self.grid = Gtk.Grid()
-        self.picbox = Gtk.Box()
-        self.titlebox = Gtk.Box()
-
-        self.cond_box = Gtk.Box
-        self.sunrise_box = Gtk.Box()
-        self.sunset_box = Gtk.Box()
-        self.cloudiness_box = Gtk.Box()
-        self.wind_box = Gtk.Box()
-        self.humidity_box = Gtk.Box()
-
-        self.image = Gtk.Image()
-        self.image.set_from_pixbuf(homepix)
-
-        self.title = Gtk.Label()
-
-        self.weather_cond = Gtk.Label()
-        self.weather_sunrise = Gtk.Label()
-        self.weather_sunset = Gtk.Label()
-        self.weather_cloudiness = Gtk.Label()
-        self.weather_wind = Gtk.Label()
-        self.weather_humidity = Gtk.Label()
-
-        fontdesc = Pango.FontDescription("AnjaliOldLipi Bold 30")
-        self.title.override_font(fontdesc)
-        self.title.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
-        # self.title.foreground_color(labelcolor)
-
-        self.picbox.add(self.image)
-        self.titlebox.add(self.title)
-
-        # self.cond_box.add(self.weather_cond)
-        self.sunrise_box.add(self.weather_sunrise)
-        self.sunrise_box.add(self.weather_cond)
-        self.sunset_box.add(self.weather_cond)
-        self.wind_box.add(self.weather_cond)
-        self.humidity_box.add(self.weather_cond)
-
-        self.grid.add(self.picbox)
-        self.grid.attach_next_to(self.titlebox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
-        # self.grid.attach_next_to(self.cond_box, self.titlebox, Gtk.PositionType.BOTTOM, 1, 2)
-        # self.add(self.grid)
-
-        self.HOME.add(self.grid)
-        self.add(self.HOME)
-        self.HOME.set_reveal_child(True)
-        # self.HOME.set_transition_type(Gtk.RevealerTransitionType.CROSSFADE)
-        # self.HOME.set_reveal_child(not self.HOME.get_reveal_child())
-        self.go_home()
+    def load_weather(self):
+        condition = self.get_weather_condition()
+        image = self.get_weather_logo()
+        weather = Weather(self.info.weather_temp + "°F", condition, self.info.weather_sunrise,
+                          self.info.weather_sunset, self.info.weather_cloudiness, self.info.weather_wind,
+                          self.info.weather_humidity, image)
+        self.add(weather)
+        pass
 
     def do_key_press_event(self, event):
         global ENABLE_TIMER
@@ -230,95 +474,104 @@ class MainWindow(Gtk.Window):
         self.image.set_from_pixbuf(homepix)
         print(self.state)
 
-    def get_weather(self):
+    def get_weather_condition(self):
         global ENABLE_TIMER
         ENABLE_TIMER = False
-        self.state = self.state_list[1]
-        self.destroy_children()
+        # self.state = self.state_list[1]
+        # self.destroy_children()
+        condition = ""
 
         if self.info.weather_cond == "Clouds":
             if 11 <= int(self.info.weather_cloudiness) < 25:
-                self.weather_cond.set_text("Few Clouds")
-                if self.info.weather_time_of_day == "day":
-                    self.image.set_from_pixbuf(cloudsdaypix)
-                else:
-                    self.image.set_from_pixbuf(cloudsnightpix)
+                condition = "Few Clouds"
             elif 25 <= int(self.info.weather_cloudiness) <= 50:
-                self.weather_cond.set_text("Scattered Clouds")
-                if self.info.weather_time_of_day == "day":
-                    self.image.set_from_pixbuf(cloudsdaypix)
-                else:
-                    self.image.set_from_pixbuf(cloudsnightpix)
+                condition = "Scattered Clouds"
             elif 51 <= int(self.info.weather_cloudiness) <= 84:
-                self.weather_cond.set_text("Broken Clouds")
-                self.image.set_from_pixbuf(brokencloudspix)
+                condition = "Broken Clouds"
             elif 85 <= int(self.info.weather_cloudiness) <= 100:
-                self.weather_cond.set_text("Overcast Clouds")
-                self.image.set_from_pixbuf(brokencloudspix)
+                condition = "Overcast Clouds"
         elif self.info.weather_cond == "Clear":
-            self.weather_cond.set_text("Sky is Clear")
-            if self.info.weather_time_of_day == "day":
-                self.image.set_from_pixbuf(cleardaypix)
-            else:
-                self.image.set_from_pixbuf(clearnightpix)
+            condition = "Sky is Clear"
         elif self.info.weather_cond == "Mist":
-            self.weather_cond.set_text("Mist")
-            self.image.set_from_pixbuf(mistpix)
+            condition = "Mist"
         elif self.info.weather_cond == "Smoke":
-            self.weather_cond.set_text("Smoke")
-            self.image.set_from_pixbuf(mistpix)
+            condition = "Smoke"
         elif self.info.weather_cond == "Haze":
-            self.weather_cond.set_text("Haze")
-            self.image.set_from_pixbuf(mistpix)
+            condition = "Haze"
         elif self.info.weather_cond == "Dust":
-            self.weather_cond.set_text("DUST")
-            self.image.set_from_pixbuf(mistpix)
+            condition = "DUST"
         elif self.info.weather_cond == "Fog":
-            self.weather_cond.set_text("Fog")
-            self.image.set_from_pixbuf(mistpix)
+            condition = "Fog"
         elif self.info.weather_cond == "Sand":
-            self.weather_cond.set_text("Sand")
-            self.image.set_from_pixbuf(mistpix)
+            condition = "Sand"
         elif self.info.weather_cond == "Ash":
-            self.weather_cond.set_text("Volcanic Ash")
-            self.image.set_from_pixbuf(mistpix)
+            condition = "Volcanic Ash"
         elif self.info.weather_cond == "Squall":
-            self.weather_cond.set_text("Squalls")
-            self.image.set_from_pixbuf(mistpix)
+            condition = "Squalls"
         elif self.info.weather_cond == "Tornado":
-            self.weather_cond.set_text("Tornado")
-            self.image.set_from_pixbuf(mistpix)
+            condition = "Tornado"
         elif self.info.weather_cond == "Snow":
-            self.weather_cond.set_text("SNOW")
-            self.image.set_from_pixbuf(snowpix)
+            condition = "SNOW"
         elif self.info.weather_cond == "Rain":
-            self.weather_cond.set_text("RAIN")
-            self.image.set_from_pixbuf(rainpix)
+            condition = "RAIN"
         elif self.info.weather_cond == "Drizzle":
-            self.weather_cond.set_text("DRIZZLE")
-            self.image.set_from_pixbuf(showerspix)
+            condition = "DRIZZLE"
         elif self.info.weather_cond == "Thunderstorm":
-            self.weather_cond.set_text("THUNDERSTORM")
-            self.image.set_from_pixbuf(thunderstormpix)
+            condition = "THUNDERSTORM"
+        return condition
 
-        fontdesc = Pango.FontDescription("AnjaliOldLipi Bold 70")
-        self.weather_cond.override_font(fontdesc)
-        self.weather_cond.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+    def get_weather_logo(self):
+        print(self.info.weather_cond)
+        image = logopix
+        if self.info.weather_cond == "Clouds":
+            if 11 <= int(self.info.weather_cloudiness) < 25:
+                if self.info.weather_time_of_day == "day":
+                    image = cloudsdaypix
+                else:
+                    image = cloudsnightpix
+            elif 25 <= int(self.info.weather_cloudiness) <= 50:
+                if self.info.weather_time_of_day == "day":
+                    image = cloudsdaypix
+                else:
+                    image = cloudsnightpix
+            elif 51 <= int(self.info.weather_cloudiness) <= 84:
+                image = brokencloudspix
+            elif 85 <= int(self.info.weather_cloudiness) <= 100:
+                image = brokencloudspix
+        elif self.info.weather_cond == "Clear":
+            if self.info.weather_time_of_day == "day":
+                print("THIS HAPPENED")
+                image = cleardaypix
+            else:
+                image = clearnightpix
+        elif self.info.weather_cond == "Mist":
+            image = mistpix
+        elif self.info.weather_cond == "Smoke":
+            image = mistpix
+        elif self.info.weather_cond == "Haze":
+            image = mistpix
+        elif self.info.weather_cond == "Dust":
+            image = mistpix
+        elif self.info.weather_cond == "Fog":
+            image = mistpix
+        elif self.info.weather_cond == "Sand":
+            image = mistpix
+        elif self.info.weather_cond == "Ash":
+            image = mistpix
+        elif self.info.weather_cond == "Squall":
+            image = mistpix
+        elif self.info.weather_cond == "Tornado":
+            image = mistpix
+        elif self.info.weather_cond == "Snow":
+            image = snowpix
+        elif self.info.weather_cond == "Rain":
+            image = rainpix
+        elif self.info.weather_cond == "Drizzle":
+            image = showerspix
+        elif self.info.weather_cond == "Thunderstorm":
+            image = thunderstormpix
 
-        fontdesc = Pango.FontDescription("AnjaliOldLipi Bold 150")
-        self.title.override_font(fontdesc)
-        self.title.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
-
-        self.title.set_text(self.info.weather_temp + "°F")
-        self.grid.add(self.picbox)
-        self.grid.attach_next_to(self.titlebox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
-        # self.grid.attach_next_to(self.cond_box, self.titlebox, Gtk.PositionType.BOTTOM, 1, 2)
-        # self.grid.attach_next_to(sunrise_label, temp_label, Gtk.PositionType.BOTTOM, 1, 2)
-        # self.grid.attach_next_to(sunset_label, sunrise_label, Gtk.PositionType.BOTTOM, 1, 2)
-        # self.grid.attach_next_to(cloudiness_label, sunset_label, Gtk.PositionType.BOTTOM, 1, 2)
-        # self.grid.attach_next_to(wind_speed_label, cloudiness_label, Gtk.PositionType.BOTTOM, 1, 2)
-        # self.grid.attach_next_to(humidity_label, wind_speed_label, Gtk.PositionType.BOTTOM, 1, 2)
-        print(self.state)
+        return image
 
     def get_time_date(self):
         global ENABLE_TIMER
