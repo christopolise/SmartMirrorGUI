@@ -39,6 +39,9 @@ thunderstorm_img = "./src/weather/thunderstorm.svg"
 up_img = "./src/direction/up.svg"
 down_img = "./src/direction/down.svg"
 
+# Home Status Bar
+message = "./src/homescreen/message.svg"
+
 # System Images
 iconpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(icon, -1, 250, True)
 helppix = GdkPixbuf.Pixbuf.new_from_file_at_scale(helpimg, -1, 250, True)
@@ -74,8 +77,23 @@ home_timepix = GdkPixbuf.Pixbuf.new_from_file_at_scale(timeimg, -1, 128, True)
 home_calendarpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(calendarimg, -1, 128, True)
 
 # Direction arrows
-uppix = GdkPixbuf.Pixbuf.new_from_file_at_scale(up_img, -1, 100, True)
-downpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(down_img, -1, 100, True)
+uppix = GdkPixbuf.Pixbuf.new_from_file_at_scale(up_img, -1, 50, True)
+downpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(down_img, -1, 50, True)
+
+# Home Screen Status Bar
+status_message_sing_pix = GdkPixbuf.Pixbuf.new_from_file_at_scale(message, -1, 50, True)
+status_message_plu_pix = GdkPixbuf.Pixbuf.new_from_file_at_scale(messagesimg, -1, 50, True)
+status_severepix = GdkPixbuf.Pixbuf.new_from_file_at_scale(severe_img, -1, 50, True)
+status_brokencloudspix = GdkPixbuf.Pixbuf.new_from_file_at_scale(broken_clouds_img, -1, 50, True)
+status_cleardaypix = GdkPixbuf.Pixbuf.new_from_file_at_scale(clear_day_img, -1, 50, True)
+status_clearnightpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(clear_night_img, -1, 50, True)
+status_cloudsdaypix = GdkPixbuf.Pixbuf.new_from_file_at_scale(clouds_day_img, -1, 50, True)
+status_cloudsnightpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(clouds_night_img, -1, 50, True)
+status_mistpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(mist_img, -1, 50, True)
+status_rainpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(rain_img, -1, 50, True)
+status_showerspix = GdkPixbuf.Pixbuf.new_from_file_at_scale(showers_img, -1, 50, True)
+status_snowpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(snow_img, -1, 50, True)
+status_thunderstormpix = GdkPixbuf.Pixbuf.new_from_file_at_scale(thunderstorm_img, -1, 50, True)
 
 
 class Loading(Gtk.VBox):
@@ -101,11 +119,53 @@ class Loading(Gtk.VBox):
         self.add(center)
 
 
-class Home(Gtk.Box):
-    def __init__(self):
-        Gtk.Box.__init__(self)
+class Home(Gtk.VBox):
+    def __init__(self, weather, temp,unread, cal_event):
+        Gtk.VBox.__init__(self)
 
-    pass
+        self.weather = weather
+        self.temp = temp
+        self.unread = unread
+        self.cal_event = cal_event
+
+        self.create_screen()
+
+    def create_screen(self):
+        center = Gtk.VBox()
+        weatherbox = Gtk.HBox()
+        messagebox = Gtk.HBox()
+        status_bar = Gtk.HBox()
+
+        weather_image = Gtk.Image()
+        message_image = Gtk.Image()
+
+        weather_image.set_from_pixbuf(self.weather)
+        if int(self.unread) == 1:
+            message_image.set_from_pixbuf(status_message_sing_pix)
+        elif int(self.unread) > 1:
+            message_image.set_from_pixbuf(status_message_plu_pix)
+
+        time = str(datetime.now().strftime("%-I:%M %p "))
+        date_str = str(datetime.now().strftime("%A %b %d, %Y"))
+
+        time_label = Gtk.Label()
+        date_label = Gtk.Label()
+        temp_label = Gtk.Label()
+        messages_label = Gtk.Label()
+        calendar_label = Gtk.Label()
+
+        time_label.set_text(time)
+        date_label.set_text(date_str)
+        temp_label.set_text("TEMP")
+        messages_label.set_text("1")
+        calendar_label.set_text("EVENT")
+
+        tempdesc = Pango.FontDescription("AnjaliOldLipi Bold 30")
+        time_label.override_font(tempdesc)
+        time_label.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
+
+        center.pack_end(time_label, False, True, 0)
+        self.add(center)
 
 
 class Weather(Gtk.Layout):
@@ -168,7 +228,7 @@ class Weather(Gtk.Layout):
         humidity.override_font(labeldesc)
         humidity.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
 
-        temperature.set_text(self.temperature)
+        temperature.set_text(self.temperature.split('.')[0] + "°F")
         condition.set_text(self.condition)
         sunrise.set_text(self.sunrise)
         sunset.set_text(self.sunset)
@@ -191,6 +251,7 @@ class Weather(Gtk.Layout):
         center.pack_start(cloudbox, True, False, 0)
         center.pack_start(sunbox, True, False, 0)
         self.put(center, ((Gdk.Screen.width() / 2) - 325), 100)
+        # self.add(center)
 
 
 class TimeDate(Gtk.VBox):
@@ -511,11 +572,11 @@ class MainWindow(Gtk.Window):
         # print(self.info.weather_temp)
         self.add(loading)
 
-        # while self.info.weather_temp is "" or self.info.weather_cond is "" or self.info.weather_sunrise is "" or\
-        #         self.info.weather_sunset is "" or self.info.weather_cloudiness is "" or self.info.weather_wind is "" or\
-        #         self.info.weather_humidity is "":
-        #     # print("LOADING WEATHER")
-        #     pass
+        while self.info.weather_temp is "" or self.info.weather_cond is "" or self.info.weather_sunrise is "" or\
+                self.info.weather_sunset is "" or self.info.weather_cloudiness is "" or self.info.weather_wind is "" or\
+                self.info.weather_humidity is "" or self.info.weather_gid is "":
+            print("LOADING WEATHER")
+
 
         # while self.info.quote_author is "" or self.info.quote_text is "":
         #     print("LOADING QUOTE")
@@ -554,14 +615,15 @@ class MainWindow(Gtk.Window):
                             self.info.event_location_2, self.info.event_location_3, self.info.event_location_4)
         messages = Messages()
         mirror = Mirror()
-        self.time = TimeDate()
+        home = Home()
+        self.add(home)
+        # self.time = TimeDate()
         # self.remove(loading)
         # self.add(loading)
         # self.add(mirror)
         # self.add(help)
         # self.add(info)
-        self.add(self.time)
-        self.start_time()
+        # self.add(self.time)
         # self.start_time()
         # self.add(calendar)
         # self.add(messages)
@@ -585,10 +647,194 @@ class MainWindow(Gtk.Window):
     def load_weather(self):
         condition = self.get_weather_condition()
         image = self.get_weather_logo()
-        weather = Weather(self.info.weather_temp + "°F", condition, self.info.weather_sunrise,
+        weather = Weather(self.info.weather_temp, condition, self.info.weather_sunrise,
                           self.info.weather_sunset, self.info.weather_cloudiness, self.info.weather_wind,
                           self.info.weather_humidity, image)
         self.add(weather)
+
+    def get_weather_condition(self):
+        global ENABLE_TIMER
+        ENABLE_TIMER = False
+        condition = ""
+
+        if self.info.weather_cond == "Clouds":
+            if 11 <= int(self.info.weather_cloudiness) < 25:
+                condition = "Few Clouds"
+            elif 25 <= int(self.info.weather_cloudiness) <= 50:
+                condition = "Sparse Clouds"
+            elif 51 <= int(self.info.weather_cloudiness) <= 84:
+                condition = "Broken Clouds"
+            elif 85 <= int(self.info.weather_cloudiness) <= 100:
+                condition = "Overcast Clouds"
+        elif self.info.weather_cond == "Clear":
+            condition = "Sky is Clear"
+        elif self.info.weather_cond == "Mist":
+            condition = "Mist"
+        elif self.info.weather_cond == "Smoke":
+            condition = "Smoke"
+        elif self.info.weather_cond == "Haze":
+            condition = "Haze"
+        elif self.info.weather_cond == "Dust":
+            if self.info.weather_gid == "731":
+                condition = "Sand/Dust Whirls"
+            elif self.info.weather_gid == "761":
+                condition = "Dust"
+            else:
+                condition = "Not Recognized"
+        elif self.info.weather_cond == "Fog":
+            condition = "Fog"
+        elif self.info.weather_cond == "Sand":
+            condition = "Sand"
+        elif self.info.weather_cond == "Ash":
+            condition = "Volcanic Ash"
+        elif self.info.weather_cond == "Squall":
+            condition = "Squalls"
+        elif self.info.weather_cond == "Tornado":
+            condition = "Tornado"
+        elif self.info.weather_cond == "Snow":
+            if self.info.weather_gid == "622":
+                condition = "Heavy Shower Snow"
+            elif self.info.weather_gid == "600":
+                condition = "Light Snow"
+            elif self.info.weather_gid == "601":
+                condition = "Snow"
+            elif self.info.weather_gid == "602":
+                condition = "Heavy Snow"
+            elif self.info.weather_gid == "611":
+                condition = "Sleet"
+            elif self.info.weather_gid == "612":
+                condition = "Light Shower Sleet"
+            elif self.info.weather_gid == "613":
+                condition = "Shower Sleet"
+            elif self.info.weather_gid == "615":
+                condition = "Light Rain and Snow"
+            elif self.info.weather_gid == "616":
+                condition = "Rain and Snow"
+            elif self.info.weather_gid == "620":
+                condition = "Light Shower Snow"
+            elif self.info.weather_gid == "621":
+                condition = "Shower Snow"
+            else:
+                condition = "Not Recognized"
+        elif self.info.weather_cond == "Rain":
+            if self.info.weather_gid == "500":
+                condition = "Light Rain"
+            elif self.info.weather_gid == "501":
+                condition = "Moderate Rain"
+            elif self.info.weather_gid == "502":
+                condition = "Heavy Intensity Rain"
+            elif self.info.weather_gid == "503":
+                condition = "Very Heavy Rain"
+            elif self.info.weather_gid == "504":
+                condition = "Extreme Rain"
+            elif self.info.weather_gid == "511":
+                condition = "Freezing Rain"
+            elif self.info.weather_gid == "520":
+                condition = "Light Intensity Shower Rain"
+            elif self.info.weather_gid == "521":
+                condition = "Shower Rain"
+            elif self.info.weather_gid == "522":
+                condition = "Heavy Intensity Shower Rain"
+            elif self.info.weather_gid == "531":
+                condition = "Ragged Shower Rain"
+            else:
+                condition = "Not Recognized"
+        elif self.info.weather_cond == "Drizzle":
+            if self.info.weather_gid == "300":
+                condition = "Light Intensity Drizzle"
+            elif self.info.weather_cond == "301":
+                condition = "Drizzle"
+            elif self.info.weather_cond == "302":
+                condition = "Heavy Intensity Drizzle"
+            elif self.info.weather_cond == "310":
+                condition = "Light Intensity Drizzle Rain"
+            elif self.info.weather_cond == "311":
+                condition = "Drizzle Rain"
+            elif self.info.weather_cond == "312":
+                condition = "Heavy Intensity Drizzle Rain"
+            elif self.info.weather_cond == "313":
+                condition = "Shower Rain and Drizzle"
+            elif self.info.weather_cond == "314":
+                condition = "Heavy Shower Rain and Drizzle"
+            elif self.info.weather_cond == "321":
+                condition = "Shower Drizzle"
+            else:
+                condition = "Not Recognized"
+        elif self.info.weather_cond == "Thunderstorm":
+            if self.info.weather_gid == "200":
+                condition = "Thunderstorm with Light Rain"
+            elif self.info.weather_gid == "201":
+                condition = "Thunderstorm with Rain"
+            elif self.info.weather_gid == "202":
+                condition = "Thunderstorm with Heavy Rain"
+            elif self.info.weather_gid == "210":
+                condition = "Light Thunderstorm"
+            elif self.info.weather_gid == "211":
+                condition = "Thunderstorm"
+            elif self.info.weather_gid == "212":
+                condition = "Heavy Thunderstorm"
+            elif self.info.weather_gid == "221":
+                condition = "Ragged Thunderstorm"
+            elif self.info.weather_gid == "230":
+                condition = "Thunderstorm with Light Drizzle"
+            elif self.info.weather_gid == "231":
+                condition = "Thunderstorm with Drizzle"
+            elif self.info.weather_gid == "232":
+                condition = "Thunderstorm with Heavy Drizzle"
+            else:
+                "Not Recognized"
+        return condition
+
+    def get_weather_logo(self):
+        image = logopix
+        if self.info.weather_cond == "Clouds":
+            if 11 <= int(self.info.weather_cloudiness) < 25:
+                if self.info.weather_time_of_day == "day":
+                    image = cloudsdaypix
+                else:
+                    image = cloudsnightpix
+            elif 25 <= int(self.info.weather_cloudiness) <= 50:
+                if self.info.weather_time_of_day == "day":
+                    image = cloudsdaypix
+                else:
+                    image = cloudsnightpix
+            elif 51 <= int(self.info.weather_cloudiness) <= 84:
+                image = brokencloudspix
+            elif 85 <= int(self.info.weather_cloudiness) <= 100:
+                image = brokencloudspix
+        elif self.info.weather_cond == "Clear":
+            if self.info.weather_time_of_day == "day":
+                image = cleardaypix
+            else:
+                image = clearnightpix
+        elif self.info.weather_cond == "Mist":
+            image = mistpix
+        elif self.info.weather_cond == "Smoke":
+            image = mistpix
+        elif self.info.weather_cond == "Haze":
+            image = mistpix
+        elif self.info.weather_cond == "Dust":
+            image = mistpix
+        elif self.info.weather_cond == "Fog":
+            image = mistpix
+        elif self.info.weather_cond == "Sand":
+            image = mistpix
+        elif self.info.weather_cond == "Ash":
+            image = mistpix
+        elif self.info.weather_cond == "Squall":
+            image = mistpix
+        elif self.info.weather_cond == "Tornado":
+            image = mistpix
+        elif self.info.weather_cond == "Snow":
+            image = snowpix
+        elif self.info.weather_cond == "Rain":
+            image = rainpix
+        elif self.info.weather_cond == "Drizzle":
+            image = showerspix
+        elif self.info.weather_cond == "Thunderstorm":
+            image = thunderstormpix
+
+        return image
 
     def load_quote(self):
         text = self.info.quote_text
@@ -692,122 +938,8 @@ class MainWindow(Gtk.Window):
         self.image.set_from_pixbuf(homepix)
         print(STATE)
 
-    def get_weather_condition(self):
-        global ENABLE_TIMER
-        ENABLE_TIMER = False
-        condition = ""
-
-        if self.info.weather_cond == "Clouds":
-            if 11 <= int(self.info.weather_cloudiness) < 25:
-                condition = "Few Clouds"
-            elif 25 <= int(self.info.weather_cloudiness) <= 50:
-                condition = "Sparse Clouds"
-            elif 51 <= int(self.info.weather_cloudiness) <= 84:
-                condition = "Broken Clouds"
-            elif 85 <= int(self.info.weather_cloudiness) <= 100:
-                condition = "Overcast Clouds"
-        elif self.info.weather_cond == "Clear":
-            condition = "Sky is Clear"
-        elif self.info.weather_cond == "Mist":
-            condition = "Mist"
-        elif self.info.weather_cond == "Smoke":
-            condition = "Smoke"
-        elif self.info.weather_cond == "Haze":
-            condition = "Haze"
-        elif self.info.weather_cond == "Dust":
-            condition = "DUST"
-        elif self.info.weather_cond == "Fog":
-            condition = "Fog"
-        elif self.info.weather_cond == "Sand":
-            condition = "Sand"
-        elif self.info.weather_cond == "Ash":
-            condition = "Volcanic Ash"
-        elif self.info.weather_cond == "Squall":
-            condition = "Squalls"
-        elif self.info.weather_cond == "Tornado":
-            condition = "Tornado"
-        elif self.info.weather_cond == "Snow":
-            condition = "SNOW"
-        elif self.info.weather_cond == "Rain":
-            condition = "RAIN"
-        elif self.info.weather_cond == "Drizzle":
-            condition = "DRIZZLE"
-        elif self.info.weather_cond == "Thunderstorm":
-            condition = "THUNDERSTORM"
-        return condition
-
-    def get_weather_logo(self):
-        print(self.info.weather_cond)
-        image = logopix
-        if self.info.weather_cond == "Clouds":
-            if 11 <= int(self.info.weather_cloudiness) < 25:
-                if self.info.weather_time_of_day == "day":
-                    image = cloudsdaypix
-                else:
-                    image = cloudsnightpix
-            elif 25 <= int(self.info.weather_cloudiness) <= 50:
-                if self.info.weather_time_of_day == "day":
-                    image = cloudsdaypix
-                else:
-                    image = cloudsnightpix
-            elif 51 <= int(self.info.weather_cloudiness) <= 84:
-                image = brokencloudspix
-            elif 85 <= int(self.info.weather_cloudiness) <= 100:
-                image = brokencloudspix
-        elif self.info.weather_cond == "Clear":
-            if self.info.weather_time_of_day == "day":
-                print("THIS HAPPENED")
-                image = cleardaypix
-            else:
-                image = clearnightpix
-        elif self.info.weather_cond == "Mist":
-            image = mistpix
-        elif self.info.weather_cond == "Smoke":
-            image = mistpix
-        elif self.info.weather_cond == "Haze":
-            image = mistpix
-        elif self.info.weather_cond == "Dust":
-            image = mistpix
-        elif self.info.weather_cond == "Fog":
-            image = mistpix
-        elif self.info.weather_cond == "Sand":
-            image = mistpix
-        elif self.info.weather_cond == "Ash":
-            image = mistpix
-        elif self.info.weather_cond == "Squall":
-            image = mistpix
-        elif self.info.weather_cond == "Tornado":
-            image = mistpix
-        elif self.info.weather_cond == "Snow":
-            image = snowpix
-        elif self.info.weather_cond == "Rain":
-            image = rainpix
-        elif self.info.weather_cond == "Drizzle":
-            image = showerspix
-        elif self.info.weather_cond == "Thunderstorm":
-            image = thunderstormpix
-
-        return image
-
     def start_time(self):
         GObject.timeout_add(1000, self.time.update_clock)
-
-    def get_time_date(self):
-        global ENABLE_TIMER
-        print("ENTERING TIMER")
-        # ENABLE_TIMER = True
-        # if ENABLE_TIMER:
-        STATE = self.state_list[2]
-        self.destroy_children()
-        fontdesc = Pango.FontDescription("AnjaliOldLipi Bold 150")
-        self.title.override_font(fontdesc)
-        time = str(datetime.now().strftime("%-I:%M:%S %p "))
-        self.title.set_label(time)
-        self.image.set_from_pixbuf(timepix)
-        self.grid.add(self.picbox)
-        self.grid.attach_next_to(self.titlebox, self.picbox, Gtk.PositionType.BOTTOM, 1, 2)
-        self.start_clock_timer()
-        print(STATE)
 
     def show_messages(self):
         global ENABLE_TIMER
@@ -823,40 +955,6 @@ class MainWindow(Gtk.Window):
     def destroy_children(self):
         for item in self.grid:
             self.grid.remove(item)
-
-    def start_clock_timer(self):
-        global ENABLE_TIMER
-        global CUR_KEY
-        global STATE
-        if ENABLE_TIMER:
-            GObject.timeout_add(1000, self.get_time_date)
-        else:
-            # print("Previous state: ", self.state)
-            if CUR_KEY == Gdk.KEY_h and STATE is not self.state_list[0]:
-                self.go_home()
-            elif CUR_KEY == Gdk.KEY_w and STATE is not self.state_list[1]:
-                self.get_weather()
-            elif CUR_KEY == Gdk.KEY_t and STATE is not self.state_list[2]:
-                ENABLE_TIMER = True
-                self.get_time_date()
-            elif CUR_KEY == Gdk.KEY_m and STATE is not self.state_list[3]:
-                self.show_messages()
-            elif CUR_KEY == Gdk.KEY_q and STATE is not self.state_list[4]:
-                self.show_quote()
-            elif CUR_KEY == Gdk.KEY_c and STATE is not self.state_list[5]:
-                self.show_calendar()
-            elif CUR_KEY == Gdk.KEY_F1 and STATE is not self.state_list[6]:
-                self.show_help()
-            elif CUR_KEY == Gdk.KEY_i and STATE is not self.state_list[7]:
-                self.show_info()
-            elif CUR_KEY == Gdk.KEY_n and STATE is not self.state_list[8]:
-                self.show_mirror()
-            elif CUR_KEY == Gdk.KEY_Left:
-                ENABLE_TIMER = False
-                self.get_weather()
-            elif CUR_KEY == Gdk.KEY_Right:
-                ENABLE_TIMER = False
-                self.show_messages()
 
 
 window = MainWindow()

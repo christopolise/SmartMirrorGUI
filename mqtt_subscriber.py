@@ -61,6 +61,7 @@ class UpdateInfo:
         self.weather_sunrise = ""
         self.weather_sunset = ""
         self.weather_time_of_day = ""
+        self.weather_gid = ""
 
         # Event Values:
         self.event_title_1 = ""
@@ -135,6 +136,8 @@ class UpdateInfo:
                 self.weather_wind = str(msg.payload.decode("utf-8"))
             elif topic[2] == "Humidity":
                 self.weather_humidity = str(msg.payload.decode("utf-8"))
+            elif topic[2] == "GID":
+                self.weather_gid = str(msg.payload.decode("utf-8"))
             else:
                 print("Unrecognized weather val: ", topic[2])
             self.get_day_night()
