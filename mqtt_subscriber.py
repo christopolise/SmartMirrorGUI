@@ -116,6 +116,7 @@ class UpdateInfo:
         # print(msg.payload)
         # self.get_day_night()
         topic = str(msg.topic).split('/')
+        print(topic)
         if topic[1] == "Weather":
             print("Incoming from Weather")
             if topic[2] == "Temp":
@@ -139,7 +140,9 @@ class UpdateInfo:
             self.get_day_night()
         elif topic[1] == "event":
             print("Incoming from Calendar")
-            if topic[3] == 0:
+            print(topic[3])
+            if topic[3] is '0':
+                print("HERE")
                 if topic[2] == "title":
                     self.event_title_1 = str(msg.payload.decode("utf-8"))
                 elif topic[2] == "date":
@@ -148,7 +151,7 @@ class UpdateInfo:
                     self.event_location_1 = str(msg.payload.decode("utf-8"))
                 else:
                     print("Unsupported parameter: ", topic[2])
-            elif topic[3] == 1:
+            elif topic[3] is '1':
                 if topic[2] == "title":
                     self.event_title_2 = str(msg.payload.decode("utf-8"))
                 elif topic[2] == "date":
@@ -157,7 +160,7 @@ class UpdateInfo:
                     self.event_location_2 = str(msg.payload.decode("utf-8"))
                 else:
                     print("Unsupported parameter: ", topic[2])
-            elif topic[3] == 2:
+            elif topic[3] is '2':
                 if topic[2] == "title":
                     self.event_title_3 = str(msg.payload.decode("utf-8"))
                 elif topic[2] == "date":
@@ -166,7 +169,7 @@ class UpdateInfo:
                     self.event_location_3 = str(msg.payload.decode("utf-8"))
                 else:
                     print("Unsupported parameter: ", topic[2])
-            elif topic[3] == 3:
+            elif topic[3] is '3':
                 if topic[2] == "title":
                     self.event_title_4 = str(msg.payload.decode("utf-8"))
                 elif topic[2] == "date":
@@ -192,14 +195,25 @@ class UpdateInfo:
                 self.quote_author = str(msg.payload.decode("utf-8"))
         else:
             print("Unrecognized channel: ", topic[1])
-        print("Temp: ", self.weather_temp)
-        print("Cond: ", self.weather_cond)
-        print("Sunrise: ", self.weather_sunrise)
-        print("Sunset: ", self.weather_sunset)
-        print("Cloudiness: ", self.weather_cloudiness)
-        print("Wind Speed: ", self.weather_wind)
-        print("Humidity: ", self.weather_humidity)
-        print("Time of Day:", self.weather_time_of_day)
+        print(self.event_location_1)
+        print(self.event_location_2)
+        print(self.event_location_3)
+        print(self.event_location_4)
+        print(self.event_date_1)
+        print(self.event_date_2)
+        print(self.event_date_3)
+        print(self.event_date_4)
+        print(self.event_title_1)
+        print(self.event_title_2)
+        print(self.event_title_3)
+        print(self.event_title_4)
+        # print("Cond: ", self.weather_cond)
+        # print("Sunrise: ", self.weather_sunrise)
+        # print("Sunset: ", self.weather_sunset)
+        # print("Cloudiness: ", self.weather_cloudiness)
+        # print("Wind Speed: ", self.weather_wind)
+        # print("Humidity: ", self.weather_humidity)
+        # print("Time of Day:", self.weather_time_of_day)
 
     def get_day_night(self):
         now = datetime.now()
