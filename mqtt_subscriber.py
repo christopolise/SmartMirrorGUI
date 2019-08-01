@@ -95,6 +95,7 @@ class UpdateInfo:
             print("exiting")
             self.client.disconnect()
             self.client.loop_stop()
+            self.client.loop_stop()
 
     def create_client(self, name):
         print("Creating Client")
