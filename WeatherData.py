@@ -1,10 +1,61 @@
 from gi import require_version
+
 require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, Pango, GObject
+from gi.repository import Gtk, Gdk, Pango
 from datetime import datetime
-from dateutil import tz
-from time import sleep, time
+from time import time
 import Images as IMG
+import json
+
+icon_map = {
+    "01d": IMG.cleardaypix,
+    "01n": IMG.clearnightpix,
+    "02d": IMG.cloudsdaypix,
+    "02n": IMG.cloudsnightpix,
+    "03d": IMG.brokencloudspix,
+    "03n": IMG.brokencloudspix,
+    "04d": IMG.brokencloudspix,
+    "04n": IMG.brokencloudspix,
+    "09d": IMG.showerspix,
+    "09n": IMG.showerspix,
+    "10d": IMG.rainpix,
+    "10n": IMG.rainpix,
+    "11d": IMG.thunderstormpix,
+    "11n": IMG.thunderstormpix,
+    "13d": IMG.snowpix,
+    "13n": IMG.snowpix,
+    "50d": IMG.mistpix,
+    "50n": IMG.mistpix,
+}
+
+
+def datetime_from_utc_to_local(utc_datetime):
+    now_timestamp = time()
+    offset = datetime.fromtimestamp(now_timestamp) - datetime.utcfromtimestamp(now_timestamp)
+    return utc_datetime + offset
+
+
+def time_field_get(time_event):
+    certain_time = time_event.split(':')
+    hour = ""
+    minute_day = ""
+    minute = ""
+    time_of_day = ""
+    for item in range(len(certain_time)):
+        if item == 0:
+            hour = certain_time[item]
+        elif item == 1:
+            minute_day = certain_time[item]
+    minute_day = minute_day.split()
+    for item in range(len(minute_day)):
+        if item == 0:
+            minute = minute_day[item]
+        elif item == 1:
+            time_of_day = minute_day[item]
+    if time_of_day == "PM":
+        hour = int(hour) + 12
+
+    return hour, minute
 
 
 class WeatherData:
@@ -12,7 +63,6 @@ class WeatherData:
         self.count = 0
         self.temperature = "TEMPERATURE"
         self.condition = "CONDITION"
-        print("This was reassigned")
         self.sunrise = "SUNRISE"
         self.sunset = "SUNSET"
         self.cloudiness = "CLOUDINESS"
@@ -22,393 +72,34 @@ class WeatherData:
         self.gid = "GID"
         self.time_of_day = "DAY"
 
-    def datetime_from_utc_to_local(self, utc_datetime):
-        now_timestamp = time()
-        offset = datetime.fromtimestamp(now_timestamp) - datetime.utcfromtimestamp(now_timestamp)
-        return utc_datetime + offset
-
-    def time_field_get(self, time_event):
-        certain_time = time_event.split(':')
-        hour = ""
-        minute_day = ""
-        minute = ""
-        time_of_day = ""
-        for item in range(len(certain_time)):
-            if item == 0:
-                hour = certain_time[item]
-            elif item == 1:
-                minute_day = certain_time[item]
-        minute_day = minute_day.split()
-        for item in range(len(minute_day)):
-            if item == 0:
-                minute = minute_day[item]
-            elif item == 1:
-                time_of_day = minute_day[item]
-        if time_of_day == "PM":
-            hour = int(hour) + 12
-
-        return hour, minute
-
     def update(self, topic, payload):
-        self.count += 1
-        topic = str(topic).split('/')
-        if topic[1] == "Weather":
-            print("Incoming from Weather")
-            if topic[2] == "Temp":
-                self.temperature = payload.decode("utf-8")
-                print("GID: ", self.gid)
-            elif topic[2] == "Condition":
-                update_cond = str(payload.decode("utf-8"))
-                print("Condition ", update_cond)
-                if update_cond == "Clouds":
-                    if 11 <= int(self.cloudiness) < 25:
-                        self.condition = "Few Clouds"
-                    elif 25 <= int(self.cloudiness) <= 50:
-                        self.condition = "Sparse Clouds"
-                    elif 51 <= int(self.cloudiness) <= 84:
-                        self.condition = "Broken Clouds"
-                    elif 85 <= int(self.cloudiness) <= 100:
-                        self.condition = "Overcast Clouds"
-                elif update_cond == "Clear":
-                    self.condition = "Sky is Clear"
-                elif update_cond == "Mist":
-                    self.condition = "Mist"
-                elif update_cond == "Smoke":
-                    self.condition = "Smoke"
-                elif update_cond == "Haze":
-                    self.condition = "Haze"
-                elif update_cond == "Dust":
-                    if self.gid == "731":
-                        self.condition = "Sand/Dust Whirls"
-                    elif self.gid == "761":
-                        self.condition = "Dust"
-                    else:
-                        self.condition = "Not Recognized, 5"
-                elif update_cond == "Fog":
-                    self.condition = "Fog"
-                elif update_cond == "Sand":
-                    self.condition = "Sand"
-                elif update_cond == "Ash":
-                    self.condition = "Volcanic Ash"
-                elif update_cond == "Squall":
-                    self.condition = "Squalls"
-                elif update_cond == "Tornado":
-                    self.condition = "Tornado"
-                elif update_cond == "Snow":
-                    if self.gid == "622":
-                        self.condition = "Heavy Shower Snow"
-                    elif self.gid == "600":
-                        self.condition = "Light Snow"
-                    elif self.gid == "601":
-                        self.condition = "Snow"
-                    elif self.gid == "602":
-                        self.condition = "Heavy Snow"
-                    elif self.gid == "611":
-                        self.condition = "Sleet"
-                    elif self.gid == "612":
-                        self.condition = "Light Shower Sleet"
-                    elif self.gid == "613":
-                        self.condition = "Shower Sleet"
-                    elif self.gid == "615":
-                        self.condition = "Light Rain and Snow"
-                    elif self.gid == "616":
-                        self.condition = "Rain and Snow"
-                    elif self.gid == "620":
-                        self.condition = "Light Shower Snow"
-                    elif self.gid == "621":
-                        self.condition = "Shower Snow"
-                    else:
-                        self.condition = "Not Recognized, 4"
-                elif update_cond == "Rain":
-                    print("THIS PART WAS REACHED")
-                    if self.gid == "500":
-                        self.condition = "Light Rain"
-                    elif self.gid == "501":
-                        self.condition = "Moderate Rain"
-                    elif self.gid == "502":
-                        self.condition = "Heavy Intensity Rain"
-                    elif self.gid == "503":
-                        self.condition = "Very Heavy Rain"
-                    elif self.gid == "504":
-                        self.condition = "Extreme Rain"
-                    elif self.gid == "511":
-                        self.condition = "Freezing Rain"
-                    elif self.gid == "520":
-                        self.condition = "Light Intensity Shower Rain"
-                    elif self.gid == "521":
-                        self.condition = "Shower Rain"
-                    elif self.gid == "522":
-                        self.condition = "Heavy Intensity Shower Rain"
-                    elif self.gid == "531":
-                        self.condition = "Ragged Shower Rain"
-                    else:
-                        self.condition = "Not Recognized, 3" + str(self.gid)
+        try:
+            topic = topic.split('/')
+            if topic[1] != "Weather":
+                return
+            if topic[2] != "Update":
+                return
 
-                elif update_cond == "Drizzle":
-                    if self.gid == "300":
-                        self.condition = "Light Intensity Drizzle"
-                    elif self.gid == "301":
-                        self.condition = "Drizzle"
-                    elif self.gid == "302":
-                        self.condition = "Heavy Intensity Drizzle"
-                    elif self.gid == "310":
-                        self.condition = "Light Intensity Drizzle Rain"
-                    elif self.gid == "311":
-                        self.condition = "Drizzle Rain"
-                    elif self.gid == "312":
-                        self.condition = "Heavy Intensity Drizzle Rain"
-                    elif self.gid == "313":
-                        self.condition = "Shower Rain and Drizzle"
-                    elif self.gid == "314":
-                        self.condition = "Heavy Shower Rain and Drizzle"
-                    elif self.gid == "321":
-                        self.condition = "Shower Drizzle"
-                    else:
-                        self.condition = "Not Recognized, 2"
-                elif update_cond == "Thunderstorm":
-                    if self.gid == "200":
-                        self.condition = "Thunderstorm with Light Rain"
-                    elif self.gid == "201":
-                        self.condition = "Thunderstorm with Rain"
-                    elif self.gid == "202":
-                        self.condition = "Thunderstorm with Heavy Rain"
-                    elif self.gid == "210":
-                        self.condition = "Light Thunderstorm"
-                    elif self.gid == "211":
-                        self.condition = "Thunderstorm"
-                    elif self.gid == "212":
-                        self.condition = "Heavy Thunderstorm"
-                    elif self.gid == "221":
-                        self.condition = "Ragged Thunderstorm"
-                    elif self.gid == "230":
-                        self.condition = "Thunderstorm with Light Drizzle"
-                    elif self.gid == "231":
-                        self.condition = "Thunderstorm with Drizzle"
-                    elif self.gid == "232":
-                        self.condition = "Thunderstorm with Heavy Drizzle"
-                    else:
-                        self.condition = "Not Recognized, 0"
-                        print("Disguy")
-                print("GID: ", self.gid)
-            elif topic[2] == "Sunrise":
-                sunrise = self.datetime_from_utc_to_local(datetime.utcfromtimestamp(float(payload.decode("utf-8"))))
-                self.sunrise = sunrise.strftime("%-I:%M %p ")
-                print("GID: ", self.gid)
-            elif topic[2] == "Sunset":
-                sunset = self.datetime_from_utc_to_local(datetime.utcfromtimestamp(float(payload.decode("utf-8"))))
-                self.sunset = sunset.strftime("%-I:%M %p ")
-                print("GID: ", self.gid)
-            elif topic[2] == "Clouds":
-                self.cloudiness = str(payload.decode("utf-8"))
-                print("GID: ", self.gid)
-            elif topic[2] == "Wind_Speed":
-                self.wind = str(payload.decode("utf-8"))
-                print("GID: ", self.gid)
-            elif topic[2] == "Humidity":
-                self.humidity = str(payload.decode("utf-8"))
-                print("GID: ", self.gid)
-            elif topic[2] == "GID":
-                self.gid = str(payload.decode("utf-8"))
-                print("GID: ", self.gid)
-            else:
-                print("Unrecognized weather val: ", topic[2])
+            data = json.loads(payload)
+            icon = data["weather"][0]["icon"]
+            self.temperature = data["main"]["temp"]
+            self.humidity = data["main"]["humidity"]
 
-        now = datetime.now()
-        hour, minute = self.time_field_get(self.sunrise)
-        sunrise = now.replace(hour=int(hour), minute=int(minute), second=0, microsecond=0)
-        hour, minute = self.time_field_get(self.sunset)
-        sunset = now.replace(hour=int(hour), minute=int(minute), second=0, microsecond=0)
+            self.sunrise = data["sys"]["sunrise"]
+            self.sunset = data["sys"]["sunset"]
 
-        if sunrise <= now < sunset:
-            self.time_of_day = "day"
-        else:
-            self.time_of_day = "night"
+            sunrise = datetime_from_utc_to_local(datetime.utcfromtimestamp(self.sunrise))
+            self.sunrise = sunrise.strftime("%-I:%M %p ")
 
-        # if update_cond == "Clouds":
-        #     if 11 <= int(self.cloudiness) < 25:
-        #         self.condition = "Few Clouds"
-        #     elif 25 <= int(self.cloudiness) <= 50:
-        #         self.condition = "Sparse Clouds"
-        #     elif 51 <= int(self.cloudiness) <= 84:
-        #         self.condition = "Broken Clouds"
-        #     elif 85 <= int(self.cloudiness) <= 100:
-        #         self.condition = "Overcast Clouds"
-        # elif update_cond == "Clear":
-        #     self.condition = "Sky is Clear"
-        # elif update_cond == "Mist":
-        #     self.condition = "Mist"
-        # elif update_cond == "Smoke":
-        #     self.condition = "Smoke"
-        # elif update_cond == "Haze":
-        #     self.condition = "Haze"
-        # elif update_cond == "Dust":
-        #     if self.gid == "731":
-        #         self.condition = "Sand/Dust Whirls"
-        #     elif self.gid == "761":
-        #         self.condition = "Dust"
-        #     else:
-        #         self.condition = "Not Recognized"
-        # elif update_cond == "Fog":
-        #     self.condition = "Fog"
-        # elif update_cond == "Sand":
-        #     self.condition = "Sand"
-        # elif update_cond == "Ash":
-        #     self.condition = "Volcanic Ash"
-        # elif update_cond == "Squall":
-        #     self.condition = "Squalls"
-        # elif update_cond == "Tornado":
-        #     self.condition = "Tornado"
-        # elif update_cond == "Snow":
-        #     if self.gid == "622":
-        #         self.condition = "Heavy Shower Snow"
-        #     elif self.gid == "600":
-        #         self.condition = "Light Snow"
-        #     elif self.gid == "601":
-        #         self.condition = "Snow"
-        #     elif self.gid == "602":
-        #         self.condition = "Heavy Snow"
-        #     elif self.gid == "611":
-        #         self.condition = "Sleet"
-        #     elif self.gid == "612":
-        #         self.condition = "Light Shower Sleet"
-        #     elif self.gid == "613":
-        #         self.condition = "Shower Sleet"
-        #     elif self.gid == "615":
-        #         self.condition = "Light Rain and Snow"
-        #     elif self.gid == "616":
-        #         self.condition = "Rain and Snow"
-        #     elif self.gid == "620":
-        #         self.condition = "Light Shower Snow"
-        #     elif self.gid == "621":
-        #         self.condition = "Shower Snow"
-        #     else:
-        #         self.condition = "Not Recognized"
-        # elif update_cond == "Rain":
-        #     print("THIS PART WAS REACHED")
-        #     if self.gid == "500":
-        #         self.condition = "Light Rain"
-        #     elif self.gid == "501":
-        #         self.condition = "Moderate Rain"
-        #     elif self.gid == "502":
-        #         self.condition = "Heavy Intensity Rain"
-        #     elif self.gid == "503":
-        #         self.condition = "Very Heavy Rain"
-        #     elif self.gid == "504":
-        #         self.condition = "Extreme Rain"
-        #     elif self.gid == "511":
-        #         self.condition = "Freezing Rain"
-        #     elif self.gid == "520":
-        #         self.condition = "Light Intensity Shower Rain"
-        #     elif self.gid == "521":
-        #         self.condition = "Shower Rain"
-        #     elif self.gid == "522":
-        #         self.condition = "Heavy Intensity Shower Rain"
-        #     elif self.gid == "531":
-        #         self.condition = "Ragged Shower Rain"
-        #     else:
-        #         self.condition = "Not Recognized"
-        # elif update_cond == "Drizzle":
-        #     if self.gid == "300":
-        #         self.condition = "Light Intensity Drizzle"
-        #     elif self.gid == "301":
-        #         self.condition = "Drizzle"
-        #     elif self.gid == "302":
-        #         self.condition = "Heavy Intensity Drizzle"
-        #     elif self.gid == "310":
-        #         self.condition = "Light Intensity Drizzle Rain"
-        #     elif self.gid == "311":
-        #         self.condition = "Drizzle Rain"
-        #     elif self.gid == "312":
-        #         self.condition = "Heavy Intensity Drizzle Rain"
-        #     elif self.gid == "313":
-        #         self.condition = "Shower Rain and Drizzle"
-        #     elif self.gid == "314":
-        #         self.condition = "Heavy Shower Rain and Drizzle"
-        #     elif self.gid == "321":
-        #         self.condition = "Shower Drizzle"
-        #     else:
-        #         self.condition = "Not Recognized"
-        # elif update_cond == "Thunderstorm":
-        #     if self.gid == "200":
-        #         self.condition = "Thunderstorm with Light Rain"
-        #     elif self.gid == "201":
-        #         self.condition = "Thunderstorm with Rain"
-        #     elif self.gid == "202":
-        #         self.condition = "Thunderstorm with Heavy Rain"
-        #     elif self.gid == "210":
-        #         self.condition = "Light Thunderstorm"
-        #     elif self.gid == "211":
-        #         self.condition = "Thunderstorm"
-        #     elif self.gid == "212":
-        #         self.condition = "Heavy Thunderstorm"
-        #     elif self.gid == "221":
-        #         self.condition = "Ragged Thunderstorm"
-        #     elif self.gid == "230":
-        #         self.condition = "Thunderstorm with Light Drizzle"
-        #     elif self.gid == "231":
-        #         self.condition = "Thunderstorm with Drizzle"
-        #     elif self.gid == "232":
-        #         self.condition = "Thunderstorm with Heavy Drizzle"
-        #     else:
-        #         "Not Recognized"
+            sunset = datetime_from_utc_to_local(datetime.utcfromtimestamp(self.sunset))
+            self.sunset = sunset.strftime("%-I:%M %p ")
 
-        # now = datetime.now()
-        # hour, minute = self.time_field_get(self.sunrise)
-        # sunrise = now.replace(hour=int(hour), minute=int(minute), second=0, microsecond=0)
-        # hour, minute = self.time_field_get(self.sunset)
-        # sunset = now.replace(hour=int(hour), minute=int(minute), second=0, microsecond=0)
-        #
-        # if sunrise <= now < sunset:
-        #     self.time_of_day = "day"
-        # else:
-        #     self.time_of_day = "night"
-
-        if update_cond == "Clouds":
-            if 11 <= int(self.cloudiness) < 25:
-                if self.time_of_day == "day":
-                    self.image = IMG.cloudsdaypix
-                else:
-                    self.image = IMG.cloudsnightpix
-            elif 25 <= int(self.cloudiness) <= 50:
-                if self.time_of_day == "day":
-                    self.image = IMG.cloudsdaypix
-                else:
-                    self.image = IMG.cloudsnightpix
-            elif 51 <= int(self.cloudiness) <= 84:
-                self.image = IMG.brokencloudspix
-            elif 85 <= int(self.cloudiness) <= 100:
-                self.image = IMG.brokencloudspix
-        elif update_cond == "Clear":
-            if self.time_of_day == "day":
-                self.image = IMG.cleardaypix
-            else:
-                self.image = IMG.clearnightpix
-        elif update_cond == "Mist":
-            self.image = IMG.mistpix
-        elif update_cond == "Smoke":
-            self.image = IMG.mistpix
-        elif update_cond == "Haze":
-            self.image = IMG.mistpix
-        elif update_cond == "Dust":
-            self.image = IMG.mistpix
-        elif update_cond == "Fog":
-            self.image = IMG.mistpix
-        elif update_cond == "Sand":
-            self.image = IMG.mistpix
-        elif update_cond == "Ash":
-            self.image = IMG.mistpix
-        elif update_cond == "Squall":
-            self.image = IMG.mistpix
-        elif update_cond == "Tornado":
-            self.image = IMG.mistpix
-        elif update_cond == "Snow":
-            self.image = IMG.snowpix
-        elif update_cond == "Rain":
-            self.image = IMG.rainpix
-        elif update_cond == "Drizzle":
-            self.image = IMG.showerspix
-        elif update_cond == "Thunderstorm":
-            self.image = IMG.thunderstormpix
+            self.cloudiness = data["clouds"]["all"]
+            self.wind = data["wind"]["speed"]
+            self.condition = data["weather"][0]["description"].title()
+            self.image = icon_map.get(icon, IMG.logopix)
+        except Exception as e:
+            print("Something happened", e)
 
 
 class Weather(Gtk.Layout):
@@ -500,14 +191,13 @@ class Weather(Gtk.Layout):
         # self.add(center)
 
     def update_weather(self):
-        # print(self.weather_data.condition, "gloog")
-        self.humidity_label.set_text("Humidity: " + self.weather_data.humidity + '%')
-        self.wind_label.set_text("Wind Speed: " + self.weather_data.wind + ' mph')
-        self.cloudiness_label.set_text("Cloudiness: " + self.weather_data.cloudiness + '%')
+        self.humidity_label.set_text(f"Humidity: {self.weather_data.humidity} %")
+        self.wind_label.set_text(f"Wind Speed: {self.weather_data.wind} mph")
+        self.cloudiness_label.set_text(f"Cloudiness: {self.weather_data.cloudiness} %")
         self.sunset_label.set_text(self.weather_data.sunset)
         self.sunrise_label.set_text(self.weather_data.sunrise)
         self.condition_label.set_text(self.weather_data.condition)
-        self.temperature_label.set_text(self.weather_data.temperature.split('.')[0] + "°F")
+        self.temperature_label.set_text(f"{round(self.weather_data.temperature, 1)} °F")
 
         self.status_image.set_from_pixbuf(self.weather_data.image)
 

@@ -4,7 +4,7 @@ from gi.repository import GdkPixbuf
 
 
 # System Icons
-icon = "./src/icon.png"
+icon = "./src/general/icon.png"
 helpimg = "./src/apps/help.svg"
 homeimg = "./src/apps/home.svg"
 infoimg = "./src/apps/info.svg"
@@ -12,7 +12,7 @@ messagesimg = "./src/apps/messages.svg"
 quoteimg = "./src/apps/quote.svg"
 timeimg = "./src/apps/time.svg"
 calendarimg = "./src/apps/calendar.svg"
-logoimg = "./src/BYU.svg"
+logoimg = "./src/general/BYU.svg"
 
 # Weather Icons
 severe_img = "./src/weather/alert-severe.svg"
