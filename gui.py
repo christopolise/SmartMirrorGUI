@@ -2,13 +2,13 @@ from gi import require_version
 require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GObject
 from Auth import Auth
-from Calendar import Calendar
 from Help import Help
 from Home import Home
 from Info import Info
 from Messages import Messages
 from Mirror import Mirror
 from Quote import QuoteData, Quote
+from Calendar import Calendar, EventData
 from TimeDate import TimeDate
 from WeatherData import WeatherData, Weather
 import threading
@@ -26,6 +26,7 @@ class MainWindow(Gtk.Window):
         # Data classes which update from subscriber
         weather_data = WeatherData()
         quote_data = QuoteData()
+        calendar_data = EventData()
 
         # Screen objects that are cycled in the window
         # self.home_screen = Home()
@@ -34,19 +35,20 @@ class MainWindow(Gtk.Window):
         self.time_screen = TimeDate()
         self.message_screen = Messages()
         self.quote_screen = Quote(quote_data)
-        # self.calendar_screen = Calendar()
+        self.calendar_screen = Calendar(calendar_data)
         self.help_screen = Help()
         self.info_screen = Info()
         self.mirror_screen = Mirror()
 
         # Starts the MQTT subscriber
-        data_thread = threading.Thread(target=subscriber.run, args=([weather_data, quote_data],))
+        data_thread = threading.Thread(target=subscriber.run, args=([weather_data, quote_data, calendar_data],))
         data_thread.start()
 
         # Updates the value on the screens in separate threads
         GObject.timeout_add(1000, self.weather_screen.update_weather)
         GObject.timeout_add(1000, self.time_screen.update_clock)
         GObject.timeout_add(1000, self.quote_screen.update)
+        GObject.timeout_add(1000, self.calendar_screen.update_events)
 
         self.app_stack = Gtk.Stack()
         self.app_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
@@ -56,6 +58,7 @@ class MainWindow(Gtk.Window):
         self.app_stack.add_named(self.time_screen, "Time")
         self.app_stack.add_named(self.message_screen, "Message")
         self.app_stack.add_named(self.quote_screen, "Quote")
+        self.app_stack.add_named(self.calendar_screen, "Calendar")
         self.app_stack.add_named(self.help_screen, "Help")
         self.app_stack.add_named(self.info_screen, "Info")
         self.app_stack.add_named(self.mirror_screen, "Mirror")
@@ -65,7 +68,7 @@ class MainWindow(Gtk.Window):
 
         self.fullscreen()
         self.modify_bg(Gtk.StateType.NORMAL, Gdk.Color(255, 255, 255))
-        self.set_default_size(500, 500)
+        # self.set_default_size(500, 500)
         self.set_icon(IMG.iconpix)
 
     def do_key_press_event(self, event):

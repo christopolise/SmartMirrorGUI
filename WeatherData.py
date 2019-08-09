@@ -61,13 +61,13 @@ def time_field_get(time_event):
 class WeatherData:
     def __init__(self):
         self.count = 0
-        self.temperature = "TEMPERATURE"
-        self.condition = "CONDITION"
-        self.sunrise = "SUNRISE"
-        self.sunset = "SUNSET"
-        self.cloudiness = "CLOUDINESS"
+        self.temperature = 0
+        self.condition = "COND"
+        self.sunrise = "RISE"
+        self.sunset = "SET"
+        self.cloudiness = "CLOUD"
         self.wind = "WIND"
-        self.humidity = "HUMIDITY"
+        self.humidity = "HUMID"
         self.image = IMG.logopix
         self.gid = "GID"
         self.time_of_day = "DAY"
@@ -81,12 +81,12 @@ class WeatherData:
                 return
 
             data = json.loads(payload)
-            icon = data["weather"][0]["icon"]
-            self.temperature = data["main"]["temp"]
-            self.humidity = data["main"]["humidity"]
+            icon = data["icon"]
+            self.temperature = data["temp"]
+            self.humidity = data["humidity"]
 
-            self.sunrise = data["sys"]["sunrise"]
-            self.sunset = data["sys"]["sunset"]
+            self.sunrise = data["sunrise"]
+            self.sunset = data["sunset"]
 
             sunrise = datetime_from_utc_to_local(datetime.utcfromtimestamp(self.sunrise))
             self.sunrise = sunrise.strftime("%-I:%M %p ")
@@ -94,9 +94,9 @@ class WeatherData:
             sunset = datetime_from_utc_to_local(datetime.utcfromtimestamp(self.sunset))
             self.sunset = sunset.strftime("%-I:%M %p ")
 
-            self.cloudiness = data["clouds"]["all"]
-            self.wind = data["wind"]["speed"]
-            self.condition = data["weather"][0]["description"].title()
+            self.cloudiness = data["cloud_cover"]
+            self.wind = data["wind_speed"]
+            self.condition = data["description"].title()
             self.image = icon_map.get(icon, IMG.logopix)
         except Exception as e:
             print("Something happened", e)
@@ -165,13 +165,15 @@ class Weather(Gtk.Layout):
         self.humidity_label.override_font(labeldesc)
         self.humidity_label.override_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(255, 255, 255, 1.0))
 
-        self.temperature_label.set_text(self.temperature.split('.')[0] + "°F")
-        self.condition_label.set_text(self.condition)
-        self.sunrise_label.set_text(self.sunrise)
-        self.sunset_label.set_text(self.sunset)
-        self.cloudiness_label.set_text("Cloudiness: " + self.cloudiness + '%')
-        self.wind_label.set_text("Wind Speed: " + self.wind + ' mph')
-        self.humidity_label.set_text("Humidity: " + self.humidity + '%')
+        # self.temperature_label.set_text(self.temperature.split('.')[0] + "°F")
+        # self.condition_label.set_text(self.condition)
+        # self.sunrise_label.set_text(self.sunrise)
+        # self.sunset_label.set_text(self.sunset)
+        # self.cloudiness_label.set_text("Cloudiness: " + self.cloudiness + '%')
+        # self.wind_label.set_text("Wind Speed: " + self.wind + ' mph')
+        # self.humidity_label.set_text("Humidity: " + self.humidity + '%')
+
+        self.update_weather()
 
         sunbox.pack_start(sunrise_image, True, False, 0)
         sunbox.pack_start(self.sunrise_label, True, True, 0)
