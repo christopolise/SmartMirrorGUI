@@ -86,6 +86,8 @@ class Calendar(Gtk.VBox):
 
         self.event_stack = Gtk.Stack()
 
+        self.state = []
+
         self.create_screen()
 
     def create_screen(self):
@@ -124,7 +126,7 @@ class Calendar(Gtk.VBox):
 
         print("Contents Before:")
         for event in self.event_stack:
-            print(event)
+            print(event.position)
         print("Cal Data", self.calendar_data.events)
 
         # Remove old events from stack
@@ -145,7 +147,6 @@ class Calendar(Gtk.VBox):
                 print("New Object Added", event_title)
                 self.event_stack.add_named(Event(event), event_title)
 
-
         # Handles Updated Events
         for event_title, event in self.calendar_data.events.items():
             event_object = self.event_stack.get_child_by_name(event_title)
@@ -158,6 +159,6 @@ class Calendar(Gtk.VBox):
 
         print("Contents After:")
         for event in self.event_stack:
-            print(event)
+            print(len(self.event_stack.get_children()))
 
         return True

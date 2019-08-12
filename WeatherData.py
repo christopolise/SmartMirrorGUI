@@ -28,6 +28,27 @@ icon_map = {
     "50n": IMG.mistpix,
 }
 
+home_icon_map = {
+    "01d": IMG.status_cleardaypix,
+    "01n": IMG.status_clearnightpix,
+    "02d": IMG.status_cloudsdaypix,
+    "02n": IMG.status_cloudsnightpix,
+    "03d": IMG.status_brokencloudspix,
+    "03n": IMG.status_brokencloudspix,
+    "04d": IMG.status_brokencloudspix,
+    "04n": IMG.status_brokencloudspix,
+    "09d": IMG.status_showerspix,
+    "09n": IMG.status_showerspix,
+    "10d": IMG.status_rainpix,
+    "10n": IMG.status_rainpix,
+    "11d": IMG.status_thunderstormpix,
+    "11n": IMG.status_thunderstormpix,
+    "13d": IMG.status_snowpix,
+    "13n": IMG.status_snowpix,
+    "50d": IMG.status_mistpix,
+    "50n": IMG.status_mistpix,
+}
+
 
 def datetime_from_utc_to_local(utc_datetime):
     now_timestamp = time()
@@ -69,6 +90,7 @@ class WeatherData:
         self.wind = "WIND"
         self.humidity = "HUMID"
         self.image = IMG.logopix
+        self.status_image = IMG.logopix
         self.gid = "GID"
         self.time_of_day = "DAY"
 
@@ -98,6 +120,8 @@ class WeatherData:
             self.wind = data["wind_speed"]
             self.condition = data["description"].title()
             self.image = icon_map.get(icon, IMG.logopix)
+            self.status_image = home_icon_map.get(icon, IMG.logopix)
+
         except Exception as e:
             print("Something happened", e)
 
