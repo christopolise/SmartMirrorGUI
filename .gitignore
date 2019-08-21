@@ -5,6 +5,4 @@ venv/
 
 alignment\.py
 
-ca\.crt
-
 *.pyc
