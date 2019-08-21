@@ -18,7 +18,7 @@ class MessageData:
 
             data = json.loads(payload)
             self.messages.popleft()
-            self.messages.append(f'{data["message"]} {datetime.now().strftime("%-I:%M:%S %p ")}')
+            self.messages.append('{} {}'.format(data["message"], datetime.now().strftime("%-I:%M:%S %p ")))
         except Exception as e:
             print("Something happened", e)
 

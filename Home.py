@@ -74,7 +74,7 @@ class Home(Gtk.VBox):
         self.timedate_date.set_text(str(datetime.now().strftime("%A %b %d, %Y")))
         self.timedate_time.set_text(str(datetime.now().strftime("%-I:%M %p ")))
 
-        self.weather_temp.set_text(f"{round(self.weather_data.temperature, 1)} °F")
+        self.weather_temp.set_text("{} °F".format(round(self.weather_data.temperature, 1)))
         self.weather_img.set_from_pixbuf(self.weather_data.status_image)
 
         self.cal_time.set_text(str(list(self.cal_data.events.keys())))
