@@ -8,7 +8,7 @@ import Images as IMG
 
 class MessageData:
     def __init__(self):
-        self.messages = deque(["", "", "", "", "", "", "", "", "", ""])
+        self.messages = deque(["a", "", "a", "", "a", "", "a", "", "a", ""])
 
     def update(self, topic, payload):
         try:
